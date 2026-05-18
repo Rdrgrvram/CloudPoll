@@ -1,0 +1,14 @@
+{
+  "name": "cloudpoll-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de utilidad para CloudPoll",
+  "type": "module",
+  "scripts": {
+    "setup-local": "node scripts/setup-local.js",
+    "seed": "node scripts/seed-local.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "^3.0.0"
+  }
+}

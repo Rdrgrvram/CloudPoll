@@ -1,0 +1,10 @@
+{
+  "name": "suggest-questions",
+  "version": "1.0.0",
+  "description": "Lambda para sugerencias de preguntas con IA (Bedrock) en CloudPoll",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.0.0"
+  }
+}

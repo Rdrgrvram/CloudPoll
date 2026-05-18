@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: cloudpoll-dynamodb
+    ports:
+      - "8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    networks:
+      - cloudpoll-net
+
+networks:
+  cloudpoll-net:
+    name: cloudpoll-net
