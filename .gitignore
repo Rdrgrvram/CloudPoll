@@ -1,0 +1,20 @@
+@"
+# Dependencias de Node.js
+node_modules/
+.env
+
+# Archivos de construcción de SAM
+.aws-sam/
+samconfig.toml
+
+# Archivos de sistema Windows
+Thumbs.db
+desktop.ini
+
+# Archivos de logs
+*.log
+
+# Credenciales o secretos
+*.pem
+*.key
+"@ | Out-File -FilePath .gitignore -Encoding utf8

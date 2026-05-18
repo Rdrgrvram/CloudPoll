@@ -1,0 +1,238 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: CloudPoll - Sistema de encuestas serverless
+
+# ─────────────────────────────────────────────
+# Parámetros configurables
+# ─────────────────────────────────────────────
+Parameters:
+  CognitoUserPoolArn:
+    Type: String
+    Description: ARN del User Pool de Cognito para el Authorizer
+
+# ─────────────────────────────────────────────
+# Configuración global de todas las Lambdas
+# ─────────────────────────────────────────────
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 10
+    MemorySize: 256
+    Environment:
+      Variables:
+        POLLS_TABLE: !Ref PollsTable
+        VOTES_TABLE: !Ref VotesTable
+
+Resources:
+
+  # ─────────────────────────────────────────────
+  # DynamoDB — Tabla Polls
+  # ─────────────────────────────────────────────
+  PollsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CloudPoll-Polls
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pollId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pollId
+          KeyType: HASH
+
+  # ─────────────────────────────────────────────
+  # DynamoDB — Tabla Votes
+  # FIX: questionId añadido a AttributeDefinitions (era requerido por el GSI)
+  # ─────────────────────────────────────────────
+  VotesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CloudPoll-Votes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pollId
+          AttributeType: S
+        - AttributeName: voteId
+          AttributeType: S
+        - AttributeName: questionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pollId
+          KeyType: HASH
+        - AttributeName: voteId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: PollQuestionIndex
+          KeySchema:
+            - AttributeName: pollId
+              KeyType: HASH
+            - AttributeName: questionId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # ─────────────────────────────────────────────
+  # IAM — Rol compartido para todas las Lambdas
+  # FIX: añadido permiso bedrock:InvokeModel
+  # ─────────────────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CloudPoll-LambdaRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !GetAtt PollsTable.Arn
+                  - !GetAtt VotesTable.Arn
+                  - !Sub "${VotesTable.Arn}/index/*"
+        - PolicyName: BedrockAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: "*"
+
+  # ─────────────────────────────────────────────
+  # API Gateway — con Cognito Authorizer
+  # FIX: separado del recurso implícito de SAM para evitar conflicto
+  # ─────────────────────────────────────────────
+  CloudPollApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: CloudPoll-API
+      StageName: v1
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref CognitoUserPoolArn
+
+  # ─────────────────────────────────────────────
+  # Lambda — create-poll (POST /polls) [PROTEGIDA]
+  # ─────────────────────────────────────────────
+  CreatePollFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudPoll-CreatePoll
+      CodeUri: lambdas/create-poll/
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudPollApi
+            Path: /polls
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  # ─────────────────────────────────────────────
+  # Lambda — vote (POST /votes) [PÚBLICA]
+  # ─────────────────────────────────────────────
+  VoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudPoll-Vote
+      CodeUri: lambdas/vote/
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudPollApi
+            Path: /votes
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # ─────────────────────────────────────────────
+  # Lambda — results (GET /results/{pollId}) [PÚBLICA]
+  # ─────────────────────────────────────────────
+  ResultsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudPoll-Results
+      CodeUri: lambdas/results/
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudPollApi
+            Path: /results/{pollId}
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  # ─────────────────────────────────────────────
+  # Lambda — suggest-questions (POST /suggest) [PROTEGIDA]
+  # ─────────────────────────────────────────────
+  SuggestQuestionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudPoll-SuggestQuestions
+      CodeUri: lambdas/suggest-questions/
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: amazon.titan-text-express-v1
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CloudPollApi
+            Path: /suggest
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+# ─────────────────────────────────────────────
+# Outputs
+# ─────────────────────────────────────────────
+Outputs:
+  ApiUrl:
+    Description: "URL base del API Gateway (stage v1)"
+    Value: !Sub "https://${CloudPollApi}.execute-api.${AWS::Region}.amazonaws.com/v1/"
+    Export:
+      Name: CloudPoll-ApiUrl
+
+  PollsTableName:
+    Description: "Nombre de la tabla DynamoDB Polls"
+    Value: !Ref PollsTable
+    Export:
+      Name: CloudPoll-PollsTable
+
+  VotesTableName:
+    Description: "Nombre de la tabla DynamoDB Votes"
+    Value: !Ref VotesTable
+    Export:
+      Name: CloudPoll-VotesTable
