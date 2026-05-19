@@ -1,4 +1,5 @@
 # CloudPoll — Presentación 2
+
 ## Arquitectura Detallada + Avance Real
 
 ---
@@ -125,16 +126,16 @@ Navegador / Votante
 
 ### 1.3 Integraciones entre servicios
 
-| Origen | Destino | Protocolo | Datos transmitidos |
-|---|---|---|---|
-| S3 (frontend) | Cognito | HTTPS redirect | Código de autorización OAuth |
-| Cognito | Frontend | HTTPS | JWT (id_token, access_token) |
-| Frontend | API Gateway | HTTPS REST | JSON + Bearer Token |
-| API Gateway | Cognito | Interno AWS | Validación JWT |
-| API Gateway | Lambda | Invocación | Evento JSON (path, headers, body) |
-| Lambda | DynamoDB | AWS SDK v3 | JSON (PutItem, GetItem, Query) |
-| Lambda | Bedrock | AWS SDK v3 | Prompt texto → JSON sugerencias |
-| Lambda | IAM | Implícito | Assume role con permisos mínimos |
+| Origen        | Destino     | Protocolo      | Datos transmitidos                |
+| ------------- | ----------- | -------------- | --------------------------------- |
+| S3 (frontend) | Cognito     | HTTPS redirect | Código de autorización OAuth      |
+| Cognito       | Frontend    | HTTPS          | JWT (id_token, access_token)      |
+| Frontend      | API Gateway | HTTPS REST     | JSON + Bearer Token               |
+| API Gateway   | Cognito     | Interno AWS    | Validación JWT                    |
+| API Gateway   | Lambda      | Invocación     | Evento JSON (path, headers, body) |
+| Lambda        | DynamoDB    | AWS SDK v3     | JSON (PutItem, GetItem, Query)    |
+| Lambda        | Bedrock     | AWS SDK v3     | Prompt texto → JSON sugerencias   |
+| Lambda        | IAM         | Implícito      | Assume role con permisos mínimos  |
 
 ---
 
@@ -142,17 +143,17 @@ Navegador / Votante
 
 ### 2.1 Serverless vs Arquitectura Tradicional
 
-| Criterio | Serverless (CloudPoll) | Tradicional (EC2 + RDS) |
-|---|---|---|
-| **Escalabilidad** | Automática e instantánea | Manual o con Auto Scaling Groups |
-| **Disponibilidad** | SLA AWS Lambda: 99.95% | Depende de configuración |
-| **Costo en reposo** | $0 (sin tráfico = sin cobro) | ~$15-50/mes mínimo por instancia activa |
-| **Costo en pico** | Proporcional al tráfico real | Capacidad reservada pagada siempre |
-| **Despliegue** | `sam deploy` (< 5 min) | Configuración manual de servidores |
-| **Mantenimiento** | AWS gestiona SO, parches, HW | Equipo gestiona infraestructura |
-| **Cold start** | 100–500 ms primer invocación | Sin cold start (siempre activo) |
-| **Límite de ejecución** | 15 min por invocación | Sin límite |
-| **Estado** | Sin estado (stateless) | Puede tener estado en memoria |
+| Criterio                | Serverless (CloudPoll)       | Tradicional (EC2 + RDS)                 |
+| ----------------------- | ---------------------------- | --------------------------------------- |
+| **Escalabilidad**       | Automática e instantánea     | Manual o con Auto Scaling Groups        |
+| **Disponibilidad**      | SLA AWS Lambda: 99.95%       | Depende de configuración                |
+| **Costo en reposo**     | $0 (sin tráfico = sin cobro) | ~$15-50/mes mínimo por instancia activa |
+| **Costo en pico**       | Proporcional al tráfico real | Capacidad reservada pagada siempre      |
+| **Despliegue**          | `sam deploy` (< 5 min)       | Configuración manual de servidores      |
+| **Mantenimiento**       | AWS gestiona SO, parches, HW | Equipo gestiona infraestructura         |
+| **Cold start**          | 100–500 ms primer invocación | Sin cold start (siempre activo)         |
+| **Límite de ejecución** | 15 min por invocación        | Sin límite                              |
+| **Estado**              | Sin estado (stateless)       | Puede tener estado en memoria           |
 
 ### ✅ ¿Por qué Serverless para CloudPoll?
 
@@ -178,15 +179,15 @@ Navegador / Votante
 
 ### 3.1 Servicios implementados
 
-| # | Servicio AWS | Estado | Evidencia |
-|---|---|---|---|
-| 1 | **DynamoDB Local** | ✅ Corriendo | Tablas creadas, datos insertados |
-| 2 | **Lambda `results`** | ✅ Funcional | Responde con agregados y porcentajes |
-| 3 | **Lambda `vote`** | ✅ Funcional | Registra votos, bloquea duplicados |
-| 4 | **Lambda `create-poll`** | ✅ Funcional | Crea encuesta con UUID |
-| 5 | **Lambda `suggest-questions`** | ✅ Implementada | Pendiente cuenta Bedrock |
-| 6 | **API Gateway (SAM local)** | ✅ Corriendo | 4 endpoints montados en :3000 |
-| 7 | **GitHub Repository** | ✅ Publicado | https://github.com/Rdrgrvram/CloudPoll |
+| #   | Servicio AWS                   | Estado          | Evidencia                              |
+| --- | ------------------------------ | --------------- | -------------------------------------- |
+| 1   | **DynamoDB Local**             | ✅ Corriendo    | Tablas creadas, datos insertados       |
+| 2   | **Lambda `results`**           | ✅ Funcional    | Responde con agregados y porcentajes   |
+| 3   | **Lambda `vote`**              | ✅ Funcional    | Registra votos, bloquea duplicados     |
+| 4   | **Lambda `create-poll`**       | ✅ Funcional    | Crea encuesta con UUID                 |
+| 5   | **Lambda `suggest-questions`** | ✅ Implementada | Pendiente cuenta Bedrock               |
+| 6   | **API Gateway (SAM local)**    | ✅ Corriendo    | 4 endpoints montados en :3000          |
+| 7   | **GitHub Repository**          | ✅ Publicado    | https://github.com/Rdrgrvram/CloudPoll |
 
 ### 3.2 Estructura del repositorio (evidencia de código)
 
@@ -262,33 +263,41 @@ Content-Type: application/json
 ### 3.4 Datos de prueba insertados (seed)
 
 **Tabla `CloudPoll-Polls`**
+
 ```json
 {
   "pollId": "poll-test-001",
   "title": "Encuesta de tecnologías favoritas",
   "status": "active",
   "questions": [
-    { "questionId": "q1", "text": "¿Framework de backend favorito?",
-      "options": ["Node.js/Express", "Python/FastAPI", "Java/Spring", "Go/Gin"] },
-    { "questionId": "q2", "text": "¿Qué base de datos usas más?",
-      "options": ["PostgreSQL", "DynamoDB", "MongoDB", "MySQL"] }
+    {
+      "questionId": "q1",
+      "text": "¿Framework de backend favorito?",
+      "options": ["Node.js/Express", "Python/FastAPI", "Java/Spring", "Go/Gin"]
+    },
+    {
+      "questionId": "q2",
+      "text": "¿Qué base de datos usas más?",
+      "options": ["PostgreSQL", "DynamoDB", "MongoDB", "MySQL"]
+    }
   ]
 }
 ```
 
 **Tabla `CloudPoll-Votes`** — 7 votos pre-insertados
 
-| voteId | questionId | optionId | voterIp |
-|---|---|---|---|
-| v001 | q1 | o1 (Node.js) | 10.0.0.1 |
-| v002 | q1 | o1 (Node.js) | 10.0.0.2 |
-| v003 | q1 | o2 (FastAPI) | 10.0.0.3 |
-| v004 | q1 | o3 (Spring) | 10.0.0.4 |
-| v005 | q2 | o2 (DynamoDB) | 10.0.0.1 |
-| v006 | q2 | o1 (PostgreSQL) | 10.0.0.2 |
-| v007 | q2 | o2 (DynamoDB) | 10.0.0.3 |
+| voteId | questionId | optionId        | voterIp  |
+| ------ | ---------- | --------------- | -------- |
+| v001   | q1         | o1 (Node.js)    | 10.0.0.1 |
+| v002   | q1         | o1 (Node.js)    | 10.0.0.2 |
+| v003   | q1         | o2 (FastAPI)    | 10.0.0.3 |
+| v004   | q1         | o3 (Spring)     | 10.0.0.4 |
+| v005   | q2         | o2 (DynamoDB)   | 10.0.0.1 |
+| v006   | q2         | o1 (PostgreSQL) | 10.0.0.2 |
+| v007   | q2         | o2 (DynamoDB)   | 10.0.0.3 |
 
 **Respuesta esperada `GET /results/poll-test-001`**
+
 ```json
 {
   "pollId": "poll-test-001",
@@ -299,10 +308,25 @@ Content-Type: application/json
       "text": "¿Framework de backend favorito?",
       "totalVotes": 4,
       "options": [
-        { "optionId": "o1", "text": "Node.js/Express", "count": 2, "percentage": 50 },
-        { "optionId": "o2", "text": "Python/FastAPI",  "count": 1, "percentage": 25 },
-        { "optionId": "o3", "text": "Java/Spring Boot","count": 1, "percentage": 25 },
-        { "optionId": "o4", "text": "Go/Gin",          "count": 0, "percentage": 0  }
+        {
+          "optionId": "o1",
+          "text": "Node.js/Express",
+          "count": 2,
+          "percentage": 50
+        },
+        {
+          "optionId": "o2",
+          "text": "Python/FastAPI",
+          "count": 1,
+          "percentage": 25
+        },
+        {
+          "optionId": "o3",
+          "text": "Java/Spring Boot",
+          "count": 1,
+          "percentage": 25
+        },
+        { "optionId": "o4", "text": "Go/Gin", "count": 0, "percentage": 0 }
       ]
     },
     {
@@ -310,10 +334,15 @@ Content-Type: application/json
       "text": "¿Qué base de datos usas más?",
       "totalVotes": 3,
       "options": [
-        { "optionId": "o1", "text": "PostgreSQL", "count": 1, "percentage": 33 },
-        { "optionId": "o2", "text": "DynamoDB",   "count": 2, "percentage": 67 },
-        { "optionId": "o3", "text": "MongoDB",    "count": 0, "percentage": 0  },
-        { "optionId": "o4", "text": "MySQL",      "count": 0, "percentage": 0  }
+        {
+          "optionId": "o1",
+          "text": "PostgreSQL",
+          "count": 1,
+          "percentage": 33
+        },
+        { "optionId": "o2", "text": "DynamoDB", "count": 2, "percentage": 67 },
+        { "optionId": "o3", "text": "MongoDB", "count": 0, "percentage": 0 },
+        { "optionId": "o4", "text": "MySQL", "count": 0, "percentage": 0 }
       ]
     }
   ]
@@ -343,6 +372,7 @@ REPORT Duration: 312 ms  Memory Size: 256 MB  Max Memory Used: 98 MB
 **Rama principal:** `main`
 
 **Commits relevantes:**
+
 - `docs: arquitectura, requisitos, componentes, guía de implementación`
 - `feat: template SAM completo con 4 Lambdas, DynamoDB, IAM`
 - `feat: implementación de las 4 funciones Lambda (Node.js 20)`
@@ -356,70 +386,70 @@ REPORT Duration: 312 ms  Memory Size: 256 MB  Max Memory Used: 98 MB
 
 ### 5.1 AWS Lambda
 
-| Parámetro | Valor |
-|---|---|
-| Invocaciones/mes | ~220,000 (votos + creación + resultados) |
-| Duración promedio | 300 ms |
-| Memoria | 256 MB |
-| Capa gratuita | 1,000,000 invocaciones + 400,000 GB-s |
-| **Costo estimado** | **$0.00 (dentro de la capa gratuita)** |
+| Parámetro          | Valor                                    |
+| ------------------ | ---------------------------------------- |
+| Invocaciones/mes   | ~220,000 (votos + creación + resultados) |
+| Duración promedio  | 300 ms                                   |
+| Memoria            | 256 MB                                   |
+| Capa gratuita      | 1,000,000 invocaciones + 400,000 GB-s    |
+| **Costo estimado** | **$0.00 (dentro de la capa gratuita)**   |
 
 ### 5.2 Amazon DynamoDB
 
-| Parámetro | Valor |
-|---|---|
-| Modo de facturación | PAY_PER_REQUEST |
-| Escrituras/mes | ~110,000 (votos + encuestas) |
-| Lecturas/mes | ~215,000 (resultados + validaciones) |
-| Almacenamiento estimado | < 1 GB |
-| Capa gratuita | 25 GB + 2.5M lecturas + 1M escrituras/mes |
-| **Costo estimado** | **$0.00 (dentro de la capa gratuita)** |
+| Parámetro               | Valor                                     |
+| ----------------------- | ----------------------------------------- |
+| Modo de facturación     | PAY_PER_REQUEST                           |
+| Escrituras/mes          | ~110,000 (votos + encuestas)              |
+| Lecturas/mes            | ~215,000 (resultados + validaciones)      |
+| Almacenamiento estimado | < 1 GB                                    |
+| Capa gratuita           | 25 GB + 2.5M lecturas + 1M escrituras/mes |
+| **Costo estimado**      | **$0.00 (dentro de la capa gratuita)**    |
 
 ### 5.3 Amazon API Gateway
 
-| Parámetro | Valor |
-|---|---|
-| Llamadas API/mes | ~220,000 |
-| Capa gratuita | 1,000,000 llamadas/mes (12 meses) |
+| Parámetro          | Valor                                  |
+| ------------------ | -------------------------------------- |
+| Llamadas API/mes   | ~220,000                               |
+| Capa gratuita      | 1,000,000 llamadas/mes (12 meses)      |
 | **Costo estimado** | **$0.00 (dentro de la capa gratuita)** |
 
 ### 5.4 Amazon Cognito
 
-| Parámetro | Valor |
-|---|---|
+| Parámetro                        | Valor      |
+| -------------------------------- | ---------- |
 | Usuarios activos mensuales (MAU) | ~10 admins |
-| Capa gratuita | 50,000 MAU |
-| **Costo estimado** | **$0.00** |
+| Capa gratuita                    | 50,000 MAU |
+| **Costo estimado**               | **$0.00**  |
 
 ### 5.5 Amazon S3
 
-| Parámetro | Valor |
-|---|---|
-| Almacenamiento frontend | < 10 MB |
-| Peticiones GET/mes | ~15,000 |
-| Capa gratuita | 5 GB + 20,000 GET/mes |
-| **Costo estimado** | **$0.00** |
+| Parámetro               | Valor                 |
+| ----------------------- | --------------------- |
+| Almacenamiento frontend | < 10 MB               |
+| Peticiones GET/mes      | ~15,000               |
+| Capa gratuita           | 5 GB + 20,000 GET/mes |
+| **Costo estimado**      | **$0.00**             |
 
 ### 5.6 Amazon Bedrock
 
-| Parámetro | Valor |
-|---|---|
-| Modelo | amazon.titan-text-express-v1 |
-| Uso estimado | 200 consultas/mes (~1,000 tokens c/u) |
-| Precio | $0.0002 por 1,000 tokens input |
-| **Costo estimado** | **~$0.04/mes** |
+| Parámetro          | Valor                                 |
+| ------------------ | ------------------------------------- |
+| Modelo             | amazon.titan-text-express-v1          |
+| Uso estimado       | 200 consultas/mes (~1,000 tokens c/u) |
+| Precio             | $0.0002 por 1,000 tokens input        |
+| **Costo estimado** | **~$0.04/mes**                        |
 
 ### 5.7 Resumen de costos
 
-| Servicio | Costo mensual (MVP) | Costo mensual (10x escala) |
-|---|---|---|
-| AWS Lambda | $0.00 | ~$1.20 |
-| DynamoDB | $0.00 | ~$2.50 |
-| API Gateway | $0.00 | ~$0.70 |
-| Cognito | $0.00 | $0.00 |
-| S3 | $0.00 | ~$0.05 |
-| Bedrock | ~$0.04 | ~$0.40 |
-| **TOTAL** | **~$0.04/mes** | **~$4.85/mes** |
+| Servicio    | Costo mensual (MVP) | Costo mensual (10x escala) |
+| ----------- | ------------------- | -------------------------- |
+| AWS Lambda  | $0.00               | ~$1.20                     |
+| DynamoDB    | $0.00               | ~$2.50                     |
+| API Gateway | $0.00               | ~$0.70                     |
+| Cognito     | $0.00               | $0.00                      |
+| S3          | $0.00               | ~$0.05                     |
+| Bedrock     | ~$0.04              | ~$0.40                     |
+| **TOTAL**   | **~$0.04/mes**      | **~$4.85/mes**             |
 
 > 💡 **Comparativa**: Una arquitectura tradicional equivalente (EC2 t3.small + RDS db.t3.micro) costaría ~**$35–60/mes** fijos, independientemente del tráfico.
 
@@ -428,22 +458,42 @@ REPORT Duration: 312 ms  Memory Size: 256 MB  Max Memory Used: 98 MB
 ## 6. Coherencia del Sistema
 
 ### ¿Ya funciona algo real?
+
 ✅ Sí. Las siguientes partes están operativas de forma integrada:
+
 - DynamoDB Local corriendo en Docker con datos reales
 - 3 Lambdas respondiendo peticiones HTTP vía SAM local
 - Deduplicación de votos funcional (patrón guard item en DynamoDB)
 - Agregación de resultados con porcentajes en tiempo real
 
 ### ¿Las decisiones están justificadas?
+
 ✅ Sí:
+
 - Serverless elimina costos fijos y escala automáticamente ante picos (encuestas virales)
 - DynamoDB NoSQL es ideal para escrituras de alta velocidad (votos concurrentes)
 - Cognito elimina la necesidad de implementar auth desde cero
 - API Gateway centraliza seguridad (JWT) y CORS
 
 ### ¿El sistema es coherente?
+
 ✅ Sí:
+
 - Cada Lambda tiene un único propósito (SRP)
 - IAM de mínimo privilegio: solo los permisos necesarios por función
 - Rutas públicas vs protegidas claramente separadas en el template SAM
 - El frontend estático (S3) está desacoplado del backend (Lambda)
+
+## Demo
+
+# Terminal 1 — infraestructura
+
+docker compose up -d
+node scripts/setup-local.js
+node scripts/seed-local.js
+
+# Terminal 2 — API
+
+npm run dev
+
+Invoke-RestMethod http://localhost:3000/results/poll-test-001 | ConvertTo-Json -Depth 5
