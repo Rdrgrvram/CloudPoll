@@ -2,6 +2,7 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "crypto";
 import { db } from "./db.js";
 
+const POLLS_TABLE = process.env.POLLS_TABLE;
 
 // ── Respuesta helper ──────────────────────────────────────────────────────────
 const response = (statusCode, body) => ({

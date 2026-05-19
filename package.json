@@ -4,11 +4,15 @@
   "description": "Scripts de utilidad para CloudPoll",
   "type": "module",
   "scripts": {
+    "dev": "node scripts/dev-server.js",
     "setup-local": "node scripts/setup-local.js",
     "seed": "node scripts/seed-local.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/lib-dynamodb": "^3.0.0"
+  },
+  "devDependencies": {
+    "express": "^5.2.1"
   }
 }
