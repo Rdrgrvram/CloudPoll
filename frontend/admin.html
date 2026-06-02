@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin — CloudPoll</title>
+  <meta name="description" content="Panel de administracion de CloudPoll. Crea encuestas y genera preguntas con IA." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────── -->
+  <nav class="navbar" role="navigation" aria-label="Navegacion principal">
+    <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
+      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <span>CloudPoll</span>
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="results.html">Resultados</a></li>
+      <li><a href="admin.html" class="active">Admin</a></li>
+    </ul>
+    <!-- Info de sesion -->
+    <div id="session-info" class="hidden" style="display:flex;align-items:center;gap:var(--space-sm)">
+      <span id="user-name" class="badge badge-primary text-sm"></span>
+      <button id="btn-logout" class="btn btn-sm btn-secondary" type="button">Salir</button>
+    </div>
+  </nav>
+
+  <!-- ── Loading overlay ─────────────────────────────────────────── -->
+  <div id="loading-overlay" class="spinner-overlay hidden" role="status" aria-label="Procesando"></div>
+
+  <!-- ── Main ────────────────────────────────────────────────────── -->
+  <main class="page-section" id="main-content">
+    <div class="container-sm">
+
+      <!-- ── Vista: Login ──────────────────────────────────────────── -->
+      <div id="view-login" class="admin-login animate-fadeIn">
+        <div class="admin-login-icon" aria-hidden="true">&#128274;</div>
+        <h1 style="font-size:var(--font-size-3xl)">Panel Admin</h1>
+        <p class="text-muted" style="max-width:360px;text-align:center">
+          Inicia sesion con tu cuenta de administrador para crear encuestas y gestionar la plataforma.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:var(--space-sm); align-items:center">
+          <button id="btn-login" class="btn btn-primary btn-lg" type="button">
+            <span aria-hidden="true">&#128274;</span>
+            <span class="btn-text">Iniciar sesion</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <p class="text-xs text-muted">
+            Autenticacion via Amazon Cognito (JWT)
+          </p>
+        </div>
+        <!-- Nota modo local -->
+        <div id="local-mode-note" class="alert alert-info hidden" style="max-width:400px;text-align:left;margin-top:var(--space-md)">
+          <span class="alert-icon" aria-hidden="true">&#8505;</span>
+          <div class="alert-body">
+            <div class="alert-title">Modo desarrollo local</div>
+            El login simula autenticacion sin Cognito real.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Vista: Panel ──────────────────────────────────────────── -->
+      <div id="view-panel" class="hidden animate-fadeIn">
+
+        <div style="margin-bottom:var(--space-xl)">
+          <h1 style="font-size:var(--font-size-3xl); margin-bottom:var(--space-sm)">Panel Admin</h1>
+          <p class="text-muted">Crea encuestas y gestiona la plataforma de CloudPoll.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" role="tablist" aria-label="Secciones del panel">
+          <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-create"  id="tabBtn-create">
+            &#43; Crear encuesta
+          </button>
+          <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-suggest" id="tabBtn-suggest">
+            &#129302; Sugerencias IA
+          </button>
+          <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-view"    id="tabBtn-view">
+            &#128202; Ver resultados
+          </button>
+        </div>
+
+        <!-- ── Tab: Crear encuesta ─────────────────────────────────── -->
+        <div id="tab-create" class="tab-content active" role="tabpanel" aria-labelledby="tabBtn-create">
+
+          <div id="create-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
+
+          <!-- Resultado exitoso -->
+          <div id="create-success" class="hidden card animate-slideInUp" style="margin-bottom:var(--space-lg); background:rgba(0,212,170,0.07); border-color:rgba(0,212,170,0.25)">
+            <h3 style="color:var(--color-success);margin-bottom:var(--space-sm)">
+              &#10003; Encuesta creada exitosamente
+            </h3>
+            <p class="text-sm text-muted" style="margin-bottom:var(--space-md)">
+              Comparte el ID con tus participantes:
+            </p>
+            <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap">
+              <span class="poll-id-pill" id="created-poll-id" style="font-size:var(--font-size-sm);padding:8px 16px"></span>
+              <button id="btn-copy-id" class="btn btn-sm btn-secondary" type="button">Copiar ID</button>
+            </div>
+            <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md);flex-wrap:wrap">
+              <a id="link-vote-created"    href="#" class="btn btn-sm btn-primary">Votar</a>
+              <a id="link-results-created" href="#" class="btn btn-sm btn-secondary">Ver resultados</a>
+              <button id="btn-create-another" class="btn btn-sm btn-outline" type="button">Crear otra</button>
+            </div>
+          </div>
+
+          <form id="create-poll-form" novalidate>
+            <!-- Titulo -->
+            <div class="form-group">
+              <label class="form-label required" for="poll-title">Titulo de la encuesta</label>
+              <input type="text" id="poll-title" class="form-control"
+                placeholder="Ej: Encuesta de satisfaccion Q3 2026"
+                maxlength="200" required aria-required="true" />
+            </div>
+
+            <!-- Descripcion -->
+            <div class="form-group">
+              <label class="form-label" for="poll-desc">Descripcion (opcional)</label>
+              <textarea id="poll-desc" class="form-control" rows="2"
+                placeholder="Contexto adicional sobre la encuesta..."
+                maxlength="500"></textarea>
+            </div>
+
+            <!-- Preguntas -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
+              <h3 style="font-size:var(--font-size-lg)">Preguntas</h3>
+              <button type="button" id="btn-add-question" class="btn btn-sm btn-secondary">
+                &#43; Agregar pregunta
+              </button>
+            </div>
+
+            <div id="questions-editor" style="display:flex;flex-direction:column;gap:var(--space-md)">
+              <!-- Las preguntas se insertan aqui dinamicamente -->
+            </div>
+
+            <button type="submit" id="btn-create-submit" class="btn btn-primary btn-full" style="margin-top:var(--space-xl)">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="btn-text">Crear encuesta</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- ── Tab: Sugerencias IA ─────────────────────────────────── -->
+        <div id="tab-suggest" class="tab-content" role="tabpanel" aria-labelledby="tabBtn-suggest">
+
+          <div class="card-elevated" style="margin-bottom:var(--space-lg)">
+            <h3 style="margin-bottom:var(--space-sm)">&#129302; Generador de preguntas con IA</h3>
+            <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
+              Ingresa un tema y Amazon Bedrock generara preguntas de encuesta con opciones de respuesta.
+            </p>
+
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+              <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
+                <label class="form-label required" for="suggest-topic">Tema</label>
+                <input type="text" id="suggest-topic" class="form-control"
+                  placeholder="Ej: satisfaccion laboral, tecnologia, salud..."
+                  maxlength="200" />
+              </div>
+              <div class="form-group" style="width:140px;margin-bottom:0">
+                <label class="form-label" for="suggest-num">N&#186; preguntas</label>
+                <input type="number" id="suggest-num" class="form-control"
+                  value="3" min="1" max="10" />
+              </div>
+            </div>
+
+            <button id="btn-suggest" class="btn btn-primary" style="margin-top:var(--space-md)" type="button">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="btn-text">&#9889; Generar con IA</span>
+            </button>
+          </div>
+
+          <div id="suggest-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
+          <div id="suggest-results" class="hidden animate-fadeIn">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
+              <h4 style="font-size:var(--font-size-lg)">Preguntas sugeridas</h4>
+              <button id="btn-use-suggestions" class="btn btn-sm btn-primary" type="button">
+                Usar en nueva encuesta
+              </button>
+            </div>
+            <div id="suggestions-container"></div>
+          </div>
+        </div>
+
+        <!-- ── Tab: Ver resultados ─────────────────────────────────── -->
+        <div id="tab-view" class="tab-content" role="tabpanel" aria-labelledby="tabBtn-view">
+          <div class="card-elevated">
+            <h3 style="margin-bottom:var(--space-sm)">Ver resultados de una encuesta</h3>
+            <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
+              Ingresa el ID de la encuesta para visualizar los resultados agregados.
+            </p>
+            <div style="display:flex;gap:var(--space-sm)">
+              <input type="text" id="view-poll-id" class="form-control"
+                placeholder="ID de la encuesta..."
+                aria-label="ID de la encuesta a visualizar" />
+              <a id="btn-view-results" href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                Ver
+              </a>
+            </div>
+          </div>
+
+          <!-- Acceso rapido al poll de prueba -->
+          <div class="card" style="margin-top:var(--space-md)">
+            <p class="text-sm text-muted" style="margin-bottom:var(--space-sm)">
+              &#128640; <strong>Encuesta de prueba disponible:</strong> <code>poll-test-001</code>
+            </p>
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+              <a href="vote.html?pollId=poll-test-001" class="btn btn-sm btn-primary" target="_blank" rel="noopener">
+                Votar en demo
+              </a>
+              <a href="results.html?pollId=poll-test-001" class="btn btn-sm btn-secondary" target="_blank" rel="noopener">
+                Ver resultados demo
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────── -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p><strong>CloudPoll</strong> &mdash; Panel de Administracion</p>
+    </div>
+  </footer>
+
+  <!-- ── Script ──────────────────────────────────────────────────── -->
+  <script type="module">
+    import { createPoll, suggestQuestions } from "./js/api.js";
+    import { login, logout, isAuthenticated, getToken, getUser, handleCallback } from "./js/auth.js";
+    import CONFIG from "./config.js";
+
+    // ── Elementos principales ────────────────────────────────────────
+    const viewLogin      = document.getElementById("view-login");
+    const viewPanel      = document.getElementById("view-panel");
+    const sessionInfo    = document.getElementById("session-info");
+    const userNameEl     = document.getElementById("user-name");
+    const btnLogin       = document.getElementById("btn-login");
+    const btnLogout      = document.getElementById("btn-logout");
+    const localModeNote  = document.getElementById("local-mode-note");
+
+    // ── Auth UI ──────────────────────────────────────────────────────
+    function showLogin() {
+      viewPanel.classList.add("hidden");
+      viewLogin.classList.remove("hidden");
+      sessionInfo.classList.add("hidden");
+      if (CONFIG.IS_LOCAL) localModeNote.classList.remove("hidden");
+    }
+
+    function showPanel() {
+      viewLogin.classList.add("hidden");
+      viewPanel.classList.remove("hidden");
+      sessionInfo.style.display = "flex";
+      const user = getUser();
+      if (user) userNameEl.textContent = user.name || user.email || "Admin";
+    }
+
+    function updateAuthState() {
+      if (isAuthenticated()) showPanel();
+      else showLogin();
+    }
+
+    btnLogin.addEventListener("click", () => {
+      btnLogin.classList.add("loading");
+      login();
+      // Si es local, login() es sincrono; actualizar UI inmediatamente
+      if (CONFIG.IS_LOCAL) {
+        setTimeout(() => {
+          btnLogin.classList.remove("loading");
+          updateAuthState();
+        }, 400);
+      }
+    });
+
+    btnLogout.addEventListener("click", () => {
+      logout();
+      updateAuthState();
+    });
+
+    window.addEventListener("auth:login",  updateAuthState);
+    window.addEventListener("auth:logout", updateAuthState);
+
+    // ── Tabs ─────────────────────────────────────────────────────────
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        const targetId = btn.getAttribute("aria-controls");
+        document.getElementById(targetId)?.classList.add("active");
+      });
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function showAlert(containerId, msg, type = "error") {
+      const el = document.getElementById(containerId);
+      el.innerHTML = `
+        <div class="alert alert-${type}">
+          <span class="alert-icon" aria-hidden="true">${type === "error" ? "&#9888;" : type === "success" ? "&#10003;" : "&#8505;"}</span>
+          <div class="alert-body">${msg}</div>
+        </div>`;
+      el.classList.remove("hidden");
+    }
+
+    function hideAlert(id) { document.getElementById(id).classList.add("hidden"); }
+
+    // ── Editor de preguntas ──────────────────────────────────────────
+    let questionCount = 0;
+
+    function addQuestion(prefilled = null) {
+      questionCount++;
+      const qId = `q${questionCount}`;
+      const editor = document.getElementById("questions-editor");
+
+      const div = document.createElement("div");
+      div.className = "card animate-slideInUp";
+      div.dataset.questionId = qId;
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
+          <span class="badge badge-primary">Pregunta ${questionCount}</span>
+          <button type="button" class="btn btn-sm btn-danger btn-remove-question" aria-label="Eliminar pregunta ${questionCount}">
+            &#215; Eliminar
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="form-label required" for="q-text-${qId}">Texto de la pregunta</label>
+          <input type="text" id="q-text-${qId}" class="form-control q-text"
+            placeholder="Escribe tu pregunta..."
+            value="${prefilled ? escapeHtml(prefilled.text) : ""}"
+            maxlength="300" required aria-required="true" />
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Opciones de respuesta (minimo 2)</label>
+          <div class="q-options" style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          </div>
+          <button type="button" class="btn btn-sm btn-outline btn-add-opt" style="margin-top:var(--space-sm)">
+            &#43; Agregar opcion
+          </button>
+        </div>
+      `;
+
+      editor.appendChild(div);
+
+      // Agregar opciones por defecto o pre-rellenadas
+      const optsToAdd = prefilled?.options?.length >= 2
+        ? prefilled.options
+        : [{ text: "" }, { text: "" }];
+
+      optsToAdd.forEach(opt => addOption(div, opt.text));
+
+      // Eventos
+      div.querySelector(".btn-remove-question").addEventListener("click", () => {
+        div.remove();
+        renumberQuestions();
+      });
+
+      div.querySelector(".btn-add-opt").addEventListener("click", () => addOption(div));
+    }
+
+    function addOption(questionDiv, prefillText = "") {
+      const optsDiv = questionDiv.querySelector(".q-options");
+      const idx = optsDiv.children.length + 1;
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:var(--space-sm);align-items:center";
+      row.innerHTML = `
+        <input type="text" class="form-control opt-text"
+          placeholder="Opcion ${idx}"
+          value="${escapeHtml(prefillText)}"
+          maxlength="200" required aria-required="true"
+          aria-label="Opcion de respuesta ${idx}" />
+        <button type="button" class="btn btn-sm btn-danger btn-remove-opt" aria-label="Eliminar opcion ${idx}"
+          style="flex-shrink:0">&#215;</button>
+      `;
+      row.querySelector(".btn-remove-opt").addEventListener("click", () => {
+        row.remove();
+      });
+      optsDiv.appendChild(row);
+    }
+
+    function renumberQuestions() {
+      document.querySelectorAll("#questions-editor > .card").forEach((div, i) => {
+        const badge = div.querySelector(".badge");
+        if (badge) badge.textContent = `Pregunta ${i + 1}`;
+        const btn = div.querySelector(".btn-remove-question");
+        if (btn) {
+          btn.setAttribute("aria-label", `Eliminar pregunta ${i + 1}`);
+        }
+      });
+    }
+
+    document.getElementById("btn-add-question").addEventListener("click", () => addQuestion());
+
+    // Comenzar con 1 pregunta vacia
+    addQuestion();
+
+    // ── Crear encuesta ────────────────────────────────────────────────
+    const createForm     = document.getElementById("create-poll-form");
+    const btnCreateSubmit= document.getElementById("btn-create-submit");
+    const createSuccess  = document.getElementById("create-success");
+    const createdPollId  = document.getElementById("created-poll-id");
+    const btnCopyId      = document.getElementById("btn-copy-id");
+    const btnCreateAnother=document.getElementById("btn-create-another");
+    const linkVoteCreated= document.getElementById("link-vote-created");
+    const linkResCreated = document.getElementById("link-results-created");
+
+    createForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideAlert("create-alert");
+      createSuccess.classList.add("hidden");
+
+      const titleEl = document.getElementById("poll-title");
+      const descEl  = document.getElementById("poll-desc");
+      const title   = titleEl.value.trim();
+      const desc    = descEl.value.trim();
+
+      if (!title) {
+        showAlert("create-alert", "El titulo de la encuesta es obligatorio.");
+        titleEl.focus();
+        return;
+      }
+
+      // Recolectar preguntas
+      const questionDivs = document.querySelectorAll("#questions-editor > .card");
+      if (questionDivs.length === 0) {
+        showAlert("create-alert", "Agrega al menos una pregunta.");
+        return;
+      }
+
+      const questions = [];
+      for (let i = 0; i < questionDivs.length; i++) {
+        const div  = questionDivs[i];
+        const text = div.querySelector(".q-text")?.value?.trim();
+        if (!text) {
+          showAlert("create-alert", `La pregunta ${i + 1} no tiene texto.`);
+          div.querySelector(".q-text")?.focus();
+          return;
+        }
+
+        const optInputs = div.querySelectorAll(".opt-text");
+        const options   = [];
+        for (const inp of optInputs) {
+          const t = inp.value.trim();
+          if (t) options.push({ optionId: `o${options.length + 1}`, text: t });
+        }
+
+        if (options.length < 2) {
+          showAlert("create-alert", `La pregunta ${i + 1} debe tener al menos 2 opciones con texto.`);
+          return;
+        }
+
+        questions.push({ questionId: `q${i + 1}`, text, options });
+      }
+
+      // Enviar
+      btnCreateSubmit.classList.add("loading");
+      btnCreateSubmit.disabled = true;
+
+      try {
+        const token = getToken();
+        const result = await createPoll({ title, description: desc, questions }, token);
+
+        // Mostrar exito
+        createdPollId.textContent = result.pollId;
+        linkVoteCreated.href      = `vote.html?pollId=${encodeURIComponent(result.pollId)}`;
+        linkResCreated.href       = `results.html?pollId=${encodeURIComponent(result.pollId)}`;
+        createSuccess.classList.remove("hidden");
+        createForm.reset();
+        document.getElementById("questions-editor").innerHTML = "";
+        questionCount = 0;
+        addQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        showAlert("create-alert", err.data?.error || "Error al crear la encuesta. Intenta de nuevo.");
+      } finally {
+        btnCreateSubmit.classList.remove("loading");
+        btnCreateSubmit.disabled = false;
+      }
+    });
+
+    btnCopyId.addEventListener("click", async () => {
+      const id = createdPollId.textContent;
+      await navigator.clipboard.writeText(id);
+      const orig = btnCopyId.textContent;
+      btnCopyId.textContent = "Copiado!";
+      setTimeout(() => { btnCopyId.textContent = orig; }, 1500);
+    });
+
+    btnCreateAnother.addEventListener("click", () => {
+      createSuccess.classList.add("hidden");
+    });
+
+    // ── Sugerencias IA ────────────────────────────────────────────────
+    const btnSuggest       = document.getElementById("btn-suggest");
+    const suggestResults   = document.getElementById("suggest-results");
+    const suggestContainer = document.getElementById("suggestions-container");
+    const btnUseSuggestions= document.getElementById("btn-use-suggestions");
+    let lastSuggestions    = [];
+
+    btnSuggest.addEventListener("click", async () => {
+      const topic = document.getElementById("suggest-topic").value.trim();
+      const num   = parseInt(document.getElementById("suggest-num").value) || 3;
+
+      if (!topic) {
+        showAlert("suggest-alert", "Ingresa un tema para generar preguntas.");
+        document.getElementById("suggest-topic").focus();
+        return;
+      }
+
+      hideAlert("suggest-alert");
+      suggestResults.classList.add("hidden");
+      btnSuggest.classList.add("loading");
+      btnSuggest.disabled = true;
+
+      try {
+        const token = getToken();
+        const result = await suggestQuestions(topic, Math.min(Math.max(num, 1), 10), token);
+        lastSuggestions = result.questions || [];
+
+        if (lastSuggestions.length === 0) {
+          showAlert("suggest-alert", "No se generaron preguntas. Intenta con otro tema.", "warning");
+          return;
+        }
+
+        suggestContainer.innerHTML = "";
+        lastSuggestions.forEach((q, i) => {
+          const card = document.createElement("div");
+          card.className = "suggest-card animate-slideInUp";
+          card.style.animationDelay = `${i * 0.07}s`;
+          const opts = q.options.map(o => `<span class="suggest-opt-tag">${escapeHtml(o.text)}</span>`).join("");
+          card.innerHTML = `
+            <p class="suggest-card-text">${escapeHtml(q.text)}</p>
+            <div class="suggest-card-opts">${opts}</div>
+          `;
+          suggestContainer.appendChild(card);
+        });
+
+        suggestResults.classList.remove("hidden");
+      } catch (err) {
+        if (err.status === 502) {
+          showAlert("suggest-alert", "Amazon Bedrock no esta disponible en modo local. Esta funcion requiere credenciales AWS reales.", "warning");
+        } else {
+          showAlert("suggest-alert", err.data?.error || "Error al generar sugerencias.");
+        }
+      } finally {
+        btnSuggest.classList.remove("loading");
+        btnSuggest.disabled = false;
+      }
+    });
+
+    btnUseSuggestions.addEventListener("click", () => {
+      if (lastSuggestions.length === 0) return;
+
+      // Cambiar a tab de crear encuesta
+      document.getElementById("tabBtn-create").click();
+
+      // Limpiar preguntas actuales y agregar las sugeridas
+      document.getElementById("questions-editor").innerHTML = "";
+      questionCount = 0;
+      lastSuggestions.forEach(q => addQuestion(q));
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // ── Tab: Ver resultados ───────────────────────────────────────────
+    const viewPollIdInput = document.getElementById("view-poll-id");
+    const btnViewResults  = document.getElementById("btn-view-results");
+
+    viewPollIdInput.addEventListener("input", () => {
+      const id = viewPollIdInput.value.trim();
+      btnViewResults.href = id ? `results.html?pollId=${encodeURIComponent(id)}` : "#";
+    });
+
+    // ── Inicializar ───────────────────────────────────────────────────
+    async function init() {
+      // Manejar callback de Cognito si hay ?code= en la URL
+      await handleCallback();
+      updateAuthState();
+    }
+
+    init();
+  </script>
+
+</body>
+</html>

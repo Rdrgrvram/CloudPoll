@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Votar — CloudPoll</title>
+  <meta name="description" content="Participa en la encuesta y registra tu voto de forma anonima y segura." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────── -->
+  <nav class="navbar" role="navigation" aria-label="Navegacion principal">
+    <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
+      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <span>CloudPoll</span>
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="results.html">Resultados</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Loading overlay ─────────────────────────────────────────── -->
+  <div id="loading-overlay" class="spinner-overlay" role="status" aria-label="Cargando encuesta">
+    <div class="spinner-xl"></div>
+  </div>
+
+  <!-- ── Main content ────────────────────────────────────────────── -->
+  <main class="page-section" id="main-content">
+    <div class="container-sm">
+
+      <!-- Error de carga -->
+      <div id="load-error" class="hidden animate-slideInUp" role="alert">
+        <div class="empty-state">
+          <div class="empty-state-icon" aria-hidden="true">&#128683;</div>
+          <h2>Encuesta no encontrada</h2>
+          <p id="load-error-msg">No se pudo cargar la encuesta. Verifica el ID e intenta de nuevo.</p>
+          <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+        </div>
+      </div>
+
+      <!-- Exito al votar -->
+      <div id="vote-success" class="hidden animate-slideInUp" role="alert">
+        <div class="empty-state">
+          <div class="empty-state-icon" aria-hidden="true">&#127881;</div>
+          <h2>&#161;Voto registrado!</h2>
+          <p>Tu voto ha sido guardado exitosamente. Gracias por participar.</p>
+          <div style="display:flex; gap:var(--space-sm); justify-content:center; flex-wrap:wrap">
+            <a id="link-results-success" href="results.html" class="btn btn-primary">
+              Ver resultados
+            </a>
+            <a href="index.html" class="btn btn-secondary">Inicio</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de votacion -->
+      <div id="vote-form-section" class="hidden animate-fadeIn">
+
+        <!-- Header de la encuesta -->
+        <div style="margin-bottom:var(--space-xl)">
+          <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm)">
+            <span class="badge badge-success" id="poll-status-badge">Activa</span>
+            <span class="poll-id-pill" id="poll-id-display" title="ID de la encuesta"></span>
+          </div>
+          <h1 id="poll-title" style="font-size:var(--font-size-3xl); margin-bottom:var(--space-sm)">
+            Cargando...
+          </h1>
+          <p id="poll-description" class="text-muted"></p>
+        </div>
+
+        <!-- Alerta de error/duplicado -->
+        <div id="vote-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
+
+        <!-- Preguntas -->
+        <form id="vote-form" novalidate>
+          <div id="questions-container"></div>
+
+          <!-- Privacidad -->
+          <div class="card" style="margin-top:var(--space-lg); margin-bottom:var(--space-lg); font-size:var(--font-size-sm); color:var(--color-text-3)">
+            <span aria-hidden="true">&#128274;</span>
+            Tu voto es <strong>anonimo</strong>. Solo se registra tu IP para evitar duplicados.
+            No se almacena ningun dato personal.
+          </div>
+
+          <button type="submit" id="btn-submit-vote" class="btn btn-primary btn-lg btn-full">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-text">Registrar mi voto</span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────── -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p><strong>CloudPoll</strong> &mdash; Tu voz importa</p>
+    </div>
+  </footer>
+
+  <!-- ── Script ──────────────────────────────────────────────────── -->
+  <script type="module">
+    import { getResults, castVote } from "./js/api.js";
+
+    // ── Elementos del DOM ───────────────────────────────────────────
+    const overlay        = document.getElementById("loading-overlay");
+    const loadError      = document.getElementById("load-error");
+    const loadErrMsg     = document.getElementById("load-error-msg");
+    const voteFormSec    = document.getElementById("vote-form-section");
+    const voteSuccess    = document.getElementById("vote-success");
+    const pollTitle      = document.getElementById("poll-title");
+    const pollDesc       = document.getElementById("poll-description");
+    const pollIdDisplay  = document.getElementById("poll-id-display");
+    const pollStatusBadge= document.getElementById("poll-status-badge");
+    const questionsDiv   = document.getElementById("questions-container");
+    const voteForm       = document.getElementById("vote-form");
+    const voteAlert      = document.getElementById("vote-alert");
+    const btnSubmit      = document.getElementById("btn-submit-vote");
+    const linkResults    = document.getElementById("link-results-success");
+
+    // ── Leer pollId de la URL ───────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const pollId = params.get("pollId");
+
+    // ── Estado local ────────────────────────────────────────────────
+    let pollData = null;
+    const selections = {}; // { questionId: optionId }
+
+    // ── Helpers UI ──────────────────────────────────────────────────
+    function hideOverlay() { overlay.classList.add("hidden"); }
+
+    function showError(msg) {
+      hideOverlay();
+      loadErrMsg.textContent = msg;
+      loadError.classList.remove("hidden");
+    }
+
+    function showVoteAlert(msg, type = "error") {
+      voteAlert.innerHTML = `
+        <div class="alert alert-${type}">
+          <span class="alert-icon" aria-hidden="true">${type === "error" ? "&#9888;" : "&#8505;"}</span>
+          <div class="alert-body">${msg}</div>
+        </div>`;
+      voteAlert.classList.remove("hidden");
+    }
+
+    function setLoading(on) {
+      btnSubmit.classList.toggle("loading", on);
+      btnSubmit.disabled = on;
+    }
+
+    // ── Renderizar preguntas ─────────────────────────────────────────
+    function renderQuestions(questions) {
+      questionsDiv.innerHTML = "";
+
+      questions.forEach((q, idx) => {
+        const block = document.createElement("div");
+        block.className = "question-block card animate-fadeIn";
+        block.style.animationDelay = `${idx * 0.08}s`;
+
+        const opts = q.options.map(opt => `
+          <div
+            class="option-item"
+            role="radio"
+            aria-checked="false"
+            tabindex="0"
+            data-question="${q.questionId}"
+            data-option="${opt.optionId}"
+            id="opt-${q.questionId}-${opt.optionId}"
+          >
+            <div class="option-radio" aria-hidden="true"></div>
+            <span class="option-text">${escapeHtml(opt.text)}</span>
+          </div>
+        `).join("");
+
+        block.innerHTML = `
+          <div class="question-number">Pregunta ${idx + 1} de ${questions.length}</div>
+          <p class="question-text">${escapeHtml(q.text)}</p>
+          <div class="option-group" role="radiogroup" aria-label="${escapeHtml(q.text)}">
+            ${opts}
+          </div>
+        `;
+        questionsDiv.appendChild(block);
+      });
+
+      // Eventos de seleccion
+      questionsDiv.querySelectorAll(".option-item").forEach(el => {
+        el.addEventListener("click",   () => selectOption(el));
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectOption(el); }
+        });
+      });
+    }
+
+    function selectOption(el) {
+      const qId  = el.dataset.question;
+      const oId  = el.dataset.option;
+
+      // Deseleccionar opciones previas de la misma pregunta
+      questionsDiv.querySelectorAll(`[data-question="${qId}"]`).forEach(o => {
+        o.classList.remove("selected");
+        o.setAttribute("aria-checked", "false");
+      });
+
+      el.classList.add("selected");
+      el.setAttribute("aria-checked", "true");
+      selections[qId] = oId;
+
+      // Ocultar alerta al seleccionar
+      voteAlert.classList.add("hidden");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ── Cargar encuesta ─────────────────────────────────────────────
+    async function loadPoll() {
+      if (!pollId) {
+        showError("No se especifico el ID de la encuesta en la URL.");
+        return;
+      }
+
+      try {
+        pollData = await getResults(pollId);
+        document.title = `${pollData.title} — CloudPoll`;
+
+        pollTitle.textContent    = pollData.title;
+        pollDesc.textContent     = pollData.description || "";
+        pollIdDisplay.textContent= `ID: ${pollId}`;
+        linkResults.href = `results.html?pollId=${encodeURIComponent(pollId)}`;
+
+        if (pollData.status !== "active") {
+          pollStatusBadge.textContent = "Cerrada";
+          pollStatusBadge.className = "badge badge-warning";
+        }
+
+        renderQuestions(pollData.results.map(r => ({
+          questionId: r.questionId,
+          text: r.text,
+          options: r.options.map(o => ({ optionId: o.optionId, text: o.text })),
+        })));
+
+        hideOverlay();
+        voteFormSec.classList.remove("hidden");
+      } catch (err) {
+        if (err.status === 404) {
+          showError(`La encuesta con ID "${pollId}" no existe o fue eliminada.`);
+        } else {
+          showError("Error al cargar la encuesta. Intenta de nuevo mas tarde.");
+        }
+      }
+    }
+
+    // ── Enviar voto ──────────────────────────────────────────────────
+    voteForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      voteAlert.classList.add("hidden");
+
+      if (!pollData) return;
+
+      // Verificar que todas las preguntas tienen respuesta
+      const unanswered = pollData.results.find(q => !selections[q.questionId]);
+      if (unanswered) {
+        showVoteAlert(`Por favor responde: "${unanswered.text}"`);
+        // Scroll a la pregunta sin responder
+        const el = questionsDiv.querySelector(`[data-question="${unanswered.questionId}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      // Enviar un voto por cada pregunta respondida
+      setLoading(true);
+      try {
+        const questions = pollData.results;
+        // Enviamos votos secuencialmente (podria ser Promise.all en produccion)
+        for (const q of questions) {
+          await castVote({
+            pollId,
+            questionId: q.questionId,
+            optionId:   selections[q.questionId],
+          });
+        }
+
+        // Mostrar exito
+        voteFormSec.classList.add("hidden");
+        voteSuccess.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        if (err.status === 409) {
+          showVoteAlert("Ya has votado en esta encuesta desde este dispositivo.", "warning");
+        } else {
+          showVoteAlert("Error al registrar tu voto. Intenta de nuevo.");
+        }
+        setLoading(false);
+      }
+    });
+
+    // ── Inicializar ──────────────────────────────────────────────────
+    loadPoll();
+  </script>
+
+</body>
+</html>

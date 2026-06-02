@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados — CloudPoll</title>
+  <meta name="description" content="Resultados en tiempo real de la encuesta. Porcentajes y conteos por opcion." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────── -->
+  <nav class="navbar" role="navigation" aria-label="Navegacion principal">
+    <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
+      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <span>CloudPoll</span>
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="results.html" class="active">Resultados</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Loading overlay ─────────────────────────────────────────── -->
+  <div id="loading-overlay" class="spinner-overlay" role="status" aria-label="Cargando resultados">
+    <div class="spinner-xl"></div>
+  </div>
+
+  <!-- ── Main ────────────────────────────────────────────────────── -->
+  <main class="page-section" id="main-content">
+    <div class="container-sm">
+
+      <!-- Error state -->
+      <div id="load-error" class="hidden animate-slideInUp" role="alert">
+        <div class="empty-state">
+          <div class="empty-state-icon" aria-hidden="true">&#128683;</div>
+          <h2>Encuesta no encontrada</h2>
+          <p id="load-error-msg">No se pudo cargar la encuesta.</p>
+          <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+        </div>
+      </div>
+
+      <!-- Resultados -->
+      <div id="results-section" class="hidden animate-fadeIn">
+
+        <!-- Header -->
+        <div style="margin-bottom:var(--space-xl)">
+          <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm); flex-wrap:wrap">
+            <span class="badge badge-success" id="poll-status-badge">Activa</span>
+            <span class="poll-id-pill" id="poll-id-display"></span>
+          </div>
+          <h1 id="poll-title" style="margin-bottom:var(--space-sm)">Cargando...</h1>
+          <p id="poll-description" class="text-muted"></p>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="stats-strip mb-xl" id="stats-strip" role="region" aria-label="Estadisticas generales">
+          <div class="stat-item">
+            <span class="stat-value" id="stat-total-votes">0</span>
+            <span class="stat-label">Votos totales</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-questions">0</span>
+            <span class="stat-label">Preguntas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-created">—</span>
+            <span class="stat-label">Creada</span>
+          </div>
+        </div>
+
+        <!-- Preguntas y resultados -->
+        <div id="results-container" role="region" aria-label="Resultados por pregunta"></div>
+
+        <!-- Acciones -->
+        <div style="display:flex; gap:var(--space-sm); margin-top:var(--space-xl); flex-wrap:wrap">
+          <a id="link-vote" href="vote.html" class="btn btn-primary">
+            <span aria-hidden="true">&#128226;</span> Votar ahora
+          </a>
+          <button id="btn-refresh" class="btn btn-secondary" type="button">
+            <span aria-hidden="true">&#8635;</span> Actualizar
+          </button>
+          <a href="index.html" class="btn btn-outline">Inicio</a>
+        </div>
+
+        <!-- Ultima actualizacion -->
+        <p class="text-xs text-muted mt-md" id="last-updated" style="margin-top:var(--space-md)"></p>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────── -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p><strong>CloudPoll</strong> &mdash; Resultados en tiempo real</p>
+    </div>
+  </footer>
+
+  <!-- ── Script ──────────────────────────────────────────────────── -->
+  <script type="module">
+    import { getResults } from "./js/api.js";
+
+    // ── Elementos ───────────────────────────────────────────────────
+    const overlay       = document.getElementById("loading-overlay");
+    const loadError     = document.getElementById("load-error");
+    const loadErrMsg    = document.getElementById("load-error-msg");
+    const resultsSection= document.getElementById("results-section");
+    const pollTitle     = document.getElementById("poll-title");
+    const pollDesc      = document.getElementById("poll-description");
+    const pollIdDisplay = document.getElementById("poll-id-display");
+    const pollStatusBadge=document.getElementById("poll-status-badge");
+    const statTotal     = document.getElementById("stat-total-votes");
+    const statQuestions = document.getElementById("stat-questions");
+    const statCreated   = document.getElementById("stat-created");
+    const resultsDiv    = document.getElementById("results-container");
+    const btnRefresh    = document.getElementById("btn-refresh");
+    const linkVote      = document.getElementById("link-vote");
+    const lastUpdated   = document.getElementById("last-updated");
+
+    const params = new URLSearchParams(window.location.search);
+    const pollId = params.get("pollId");
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function hideOverlay() { overlay.classList.add("hidden"); }
+
+    function showError(msg) {
+      hideOverlay();
+      loadErrMsg.textContent = msg;
+      loadError.classList.remove("hidden");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatDate(iso) {
+      try {
+        return new Date(iso).toLocaleDateString("es", {
+          day: "numeric", month: "short", year: "numeric",
+        });
+      } catch { return "—"; }
+    }
+
+    // ── Colores para opciones (ciclos de gradiente) ─────────────────
+    const BAR_COLORS = [
+      "linear-gradient(90deg,#6c63ff,#8b83ff)",
+      "linear-gradient(90deg,#00d4aa,#00f5c3)",
+      "linear-gradient(90deg,#ff6b9d,#ff9ec4)",
+      "linear-gradient(90deg,#42a5f5,#90caf9)",
+      "linear-gradient(90deg,#ffca28,#ffe57f)",
+      "linear-gradient(90deg,#ab47bc,#ce93d8)",
+    ];
+
+    // ── Renderizar resultados ────────────────────────────────────────
+    function renderResults(data) {
+      resultsDiv.innerHTML = "";
+
+      let grandTotal = 0;
+
+      data.results.forEach((q, qIdx) => {
+        grandTotal += q.totalVotes;
+
+        // Encontrar la opcion ganadora
+        const maxCount = Math.max(...q.options.map(o => o.count));
+
+        const block = document.createElement("section");
+        block.className = "question-block card animate-fadeIn";
+        block.style.animationDelay = `${qIdx * 0.1}s`;
+        block.setAttribute("aria-label", `Pregunta ${qIdx + 1}: ${q.text}`);
+
+        const opts = q.options.map((opt, oIdx) => {
+          const isWinner = opt.count === maxCount && maxCount > 0;
+          const color    = BAR_COLORS[oIdx % BAR_COLORS.length];
+          return `
+            <div class="result-option ${isWinner ? "result-winner" : ""}">
+              <div class="result-option-header">
+                <span class="result-option-text">${escapeHtml(opt.text)}</span>
+                <div class="result-option-stats">
+                  <span class="result-option-count">${opt.count}</span>
+                  <span>${opt.percentage}%</span>
+                  ${isWinner && maxCount > 0 ? '<span title="Lider actual" aria-label="Lider">&#127942;</span>' : ""}
+                </div>
+              </div>
+              <div class="progress-bar-wrap" role="progressbar" aria-valuenow="${opt.percentage}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeHtml(opt.text)}: ${opt.percentage}%">
+                <div class="progress-bar" data-width="${opt.percentage}" style="background:${color}; width:0%"></div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        block.innerHTML = `
+          <div class="question-number">Pregunta ${qIdx + 1} de ${data.results.length}</div>
+          <h2 class="question-text" style="font-size:var(--font-size-lg)">${escapeHtml(q.text)}</h2>
+          <p class="text-xs text-muted" style="margin-bottom:var(--space-md)">
+            ${q.totalVotes} respuesta${q.totalVotes !== 1 ? "s" : ""}
+          </p>
+          ${opts}
+        `;
+        resultsDiv.appendChild(block);
+      });
+
+      // Actualizar stats
+      statTotal.textContent     = grandTotal;
+      statQuestions.textContent = data.results.length;
+      statCreated.textContent   = formatDate(data.createdAt);
+
+      // Animar barras con RAF para que la transicion CSS funcione
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.querySelectorAll(".progress-bar[data-width]").forEach(bar => {
+            bar.style.width = bar.dataset.width + "%";
+          });
+        });
+      });
+    }
+
+    // ── Cargar resultados ────────────────────────────────────────────
+    async function loadResults(isRefresh = false) {
+      if (!isRefresh) overlay.classList.remove("hidden");
+
+      if (!pollId) {
+        showError("No se especifico el ID de la encuesta en la URL.");
+        return;
+      }
+
+      try {
+        const data = await getResults(pollId);
+        document.title = `${data.title} — Resultados — CloudPoll`;
+
+        pollTitle.textContent = data.title;
+        pollDesc.textContent  = data.description || "";
+        pollIdDisplay.textContent = `ID: ${pollId}`;
+        linkVote.href = `vote.html?pollId=${encodeURIComponent(pollId)}`;
+
+        if (data.status !== "active") {
+          pollStatusBadge.textContent = "Cerrada";
+          pollStatusBadge.className   = "badge badge-warning";
+        }
+
+        renderResults(data);
+        lastUpdated.textContent = `Ultima actualizacion: ${new Date().toLocaleTimeString("es")}`;
+
+        if (!isRefresh) {
+          hideOverlay();
+          resultsSection.classList.remove("hidden");
+        }
+      } catch (err) {
+        if (err.status === 404) {
+          showError(`La encuesta "${pollId}" no existe o fue eliminada.`);
+        } else {
+          showError("Error al cargar los resultados. Intenta de nuevo.");
+        }
+      }
+    }
+
+    // ── Refresh manual ───────────────────────────────────────────────
+    btnRefresh.addEventListener("click", async () => {
+      btnRefresh.disabled = true;
+      btnRefresh.innerHTML = '<span class="spinner" aria-hidden="true"></span> Actualizando...';
+      await loadResults(true);
+      btnRefresh.disabled = false;
+      btnRefresh.innerHTML = '<span aria-hidden="true">&#8635;</span> Actualizar';
+    });
+
+    // ── Inicializar ──────────────────────────────────────────────────
+    loadResults();
+  </script>
+
+</body>
+</html>
