@@ -28,7 +28,7 @@
     <div class="spinner-xl"></div>
   </div>
 
-  <!-- ── Main content ────────────────────────────────────────────── -->
+  <!-- ── Main ────────────────────────────────────────────────────── -->
   <main class="page-section" id="main-content">
     <div class="container-sm">
 
@@ -45,14 +45,22 @@
       <!-- Exito al votar -->
       <div id="vote-success" class="hidden animate-slideInUp" role="alert">
         <div class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
-          <h2>&#161;Voto registrado!</h2>
-          <p>Tu voto ha sido guardado exitosamente. Gracias por participar.</p>
-          <div style="display:flex; gap:var(--space-sm); justify-content:center; flex-wrap:wrap">
-            <a id="link-results-success" href="results.html" class="btn btn-primary">
-              Ver resultados
+          <div style="
+            width:80px;height:80px;
+            background:var(--mint);
+            border-radius:var(--radius-xl);
+            display:flex;align-items:center;justify-content:center;
+            font-size:2rem;color:var(--navy);
+            margin:0 auto var(--space-lg);
+            box-shadow:var(--shadow-mint)
+          " aria-hidden="true"><i class="fas fa-check"></i></div>
+          <h2 style="font-size:var(--font-size-3xl); margin-bottom:var(--space-sm)">&#161;Voto registrado!</h2>
+          <p class="text-muted" style="margin-bottom:var(--space-xl)">Tu voto ha sido guardado exitosamente. Gracias por participar.</p>
+          <div style="display:flex; gap:var(--space-md); justify-content:center; flex-wrap:wrap">
+            <a id="link-results-success" href="results.html" class="btn btn-mint btn-lg">
+              <i class="fas fa-chart-bar" aria-hidden="true"></i> Ver resultados
             </a>
-            <a href="index.html" class="btn btn-secondary">Inicio</a>
+            <a href="index.html" class="btn btn-secondary btn-lg">Inicio</a>
           </div>
         </div>
       </div>
@@ -60,9 +68,9 @@
       <!-- Formulario de votacion -->
       <div id="vote-form-section" class="hidden animate-fadeIn">
 
-        <!-- Header de la encuesta -->
+        <!-- Header -->
         <div style="margin-bottom:var(--space-xl)">
-          <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm)">
+          <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-md); flex-wrap:wrap">
             <span class="badge badge-success" id="poll-status-badge">Activa</span>
             <span class="poll-id-pill" id="poll-id-display" title="ID de la encuesta"></span>
           </div>
@@ -72,23 +80,32 @@
           <p id="poll-description" class="text-muted"></p>
         </div>
 
-        <!-- Alerta de error/duplicado -->
+        <!-- Alerta -->
         <div id="vote-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
 
         <!-- Preguntas -->
         <form id="vote-form" novalidate>
           <div id="questions-container"></div>
 
-          <!-- Privacidad -->
-          <div class="card" style="margin-top:var(--space-lg); margin-bottom:var(--space-lg); font-size:var(--font-size-sm); color:var(--color-text-3)">
-            <i class="fas fa-lock" aria-hidden="true"></i>
-            Tu voto es <strong>anonimo</strong>. Solo se registra tu IP para evitar duplicados.
-            No se almacena ningun dato personal.
+          <!-- Privacidad notice -->
+          <div style="
+            display:flex;align-items:center;gap:var(--space-md);
+            padding:var(--space-md) var(--space-lg);
+            background:rgba(75,94,166,0.07);
+            border:1px solid rgba(75,94,166,0.2);
+            border-radius:var(--radius-md);
+            margin-top:var(--space-lg);
+            margin-bottom:var(--space-lg);
+            font-size:var(--font-size-sm);
+            color:var(--color-text-3);
+          ">
+            <i class="fas fa-shield-alt" style="color:var(--blue-light);font-size:1.1rem;flex-shrink:0" aria-hidden="true"></i>
+            <span>Tu voto es <strong style="color:var(--color-text-2)">anonimo</strong>. Solo se registra tu IP para evitar duplicados. No se almacena ningun dato personal.</span>
           </div>
 
           <button type="submit" id="btn-submit-vote" class="btn btn-primary btn-lg btn-full">
             <span class="spinner" aria-hidden="true"></span>
-            <span class="btn-text">Registrar mi voto</span>
+            <span class="btn-text"><i class="fas fa-check" aria-hidden="true"></i> Registrar mi voto</span>
           </button>
         </form>
 
@@ -107,7 +124,6 @@
   <script type="module">
     import { getResults, castVote } from "./js/api.js";
 
-    // ── Elementos del DOM ───────────────────────────────────────────
     const overlay        = document.getElementById("loading-overlay");
     const loadError      = document.getElementById("load-error");
     const loadErrMsg     = document.getElementById("load-error-msg");
@@ -123,15 +139,12 @@
     const btnSubmit      = document.getElementById("btn-submit-vote");
     const linkResults    = document.getElementById("link-results-success");
 
-    // ── Leer pollId de la URL ───────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const pollId = params.get("pollId");
 
-    // ── Estado local ────────────────────────────────────────────────
     let pollData = null;
-    const selections = {}; // { questionId: optionId }
+    const selections = {};
 
-    // ── Helpers UI ──────────────────────────────────────────────────
     function hideOverlay() { overlay.classList.add("hidden"); }
 
     function showError(msg) {
@@ -154,13 +167,17 @@
       btnSubmit.disabled = on;
     }
 
-    // ── Renderizar preguntas ─────────────────────────────────────────
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
     function renderQuestions(questions) {
       questionsDiv.innerHTML = "";
-
       questions.forEach((q, idx) => {
         const block = document.createElement("div");
-        block.className = "question-block card animate-fadeIn";
+        block.className = "question-block animate-fadeIn";
         block.style.animationDelay = `${idx * 0.08}s`;
 
         const opts = q.options.map(opt => `
@@ -171,7 +188,6 @@
             tabindex="0"
             data-question="${q.questionId}"
             data-option="${opt.optionId}"
-            id="opt-${q.questionId}-${opt.optionId}"
           >
             <div class="option-radio" aria-hidden="true"></div>
             <span class="option-text">${escapeHtml(opt.text)}</span>
@@ -179,16 +195,17 @@
         `).join("");
 
         block.innerHTML = `
-          <div class="question-number">Pregunta ${idx + 1} de ${questions.length}</div>
-          <p class="question-text">${escapeHtml(q.text)}</p>
-          <div class="option-group" role="radiogroup" aria-label="${escapeHtml(q.text)}">
-            ${opts}
+          <div class="card" style="margin-bottom:var(--space-md)">
+            <div class="question-number">Pregunta ${idx + 1} de ${questions.length}</div>
+            <p class="question-text">${escapeHtml(q.text)}</p>
+            <div class="option-group" role="radiogroup" aria-label="${escapeHtml(q.text)}">
+              ${opts}
+            </div>
           </div>
         `;
         questionsDiv.appendChild(block);
       });
 
-      // Eventos de seleccion
       questionsDiv.querySelectorAll(".option-item").forEach(el => {
         el.addEventListener("click",   () => selectOption(el));
         el.addEventListener("keydown", (e) => {
@@ -198,10 +215,9 @@
     }
 
     function selectOption(el) {
-      const qId  = el.dataset.question;
-      const oId  = el.dataset.option;
+      const qId = el.dataset.question;
+      const oId = el.dataset.option;
 
-      // Deseleccionar opciones previas de la misma pregunta
       questionsDiv.querySelectorAll(`[data-question="${qId}"]`).forEach(o => {
         o.classList.remove("selected");
         o.setAttribute("aria-checked", "false");
@@ -210,33 +226,19 @@
       el.classList.add("selected");
       el.setAttribute("aria-checked", "true");
       selections[qId] = oId;
-
-      // Ocultar alerta al seleccionar
       voteAlert.classList.add("hidden");
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    // ── Cargar encuesta ─────────────────────────────────────────────
     async function loadPoll() {
-      if (!pollId) {
-        showError("No se especifico el ID de la encuesta en la URL.");
-        return;
-      }
+      if (!pollId) { showError("No se especifico el ID de la encuesta en la URL."); return; }
 
       try {
         pollData = await getResults(pollId);
         document.title = `${pollData.title} — CloudPoll`;
 
-        pollTitle.textContent    = pollData.title;
-        pollDesc.textContent     = pollData.description || "";
-        pollIdDisplay.textContent= `ID: ${pollId}`;
+        pollTitle.textContent     = pollData.title;
+        pollDesc.textContent      = pollData.description || "";
+        pollIdDisplay.textContent = `ID: ${pollId}`;
         linkResults.href = `results.html?pollId=${encodeURIComponent(pollId)}`;
 
         if (pollData.status !== "active") {
@@ -253,59 +255,39 @@
         hideOverlay();
         voteFormSec.classList.remove("hidden");
       } catch (err) {
-        if (err.status === 404) {
-          showError(`La encuesta con ID "${pollId}" no existe o fue eliminada.`);
-        } else {
-          showError("Error al cargar la encuesta. Intenta de nuevo mas tarde.");
-        }
+        if (err.status === 404) showError(`La encuesta con ID "${pollId}" no existe o fue eliminada.`);
+        else showError("Error al cargar la encuesta. Intenta de nuevo mas tarde.");
       }
     }
 
-    // ── Enviar voto ──────────────────────────────────────────────────
     voteForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       voteAlert.classList.add("hidden");
-
       if (!pollData) return;
 
-      // Verificar que todas las preguntas tienen respuesta
       const unanswered = pollData.results.find(q => !selections[q.questionId]);
       if (unanswered) {
         showVoteAlert(`Por favor responde: "${unanswered.text}"`);
-        // Scroll a la pregunta sin responder
-        const el = questionsDiv.querySelector(`[data-question="${unanswered.questionId}"]`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        questionsDiv.querySelector(`[data-question="${unanswered.questionId}"]`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
 
-      // Enviar un voto por cada pregunta respondida
       setLoading(true);
       try {
-        const questions = pollData.results;
-        // Enviamos votos secuencialmente (podria ser Promise.all en produccion)
-        for (const q of questions) {
-          await castVote({
-            pollId,
-            questionId: q.questionId,
-            optionId:   selections[q.questionId],
-          });
+        for (const q of pollData.results) {
+          await castVote({ pollId, questionId: q.questionId, optionId: selections[q.questionId] });
         }
-
-        // Mostrar exito
         voteFormSec.classList.add("hidden");
         voteSuccess.classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
-        if (err.status === 409) {
-          showVoteAlert("Ya has votado en esta encuesta desde este dispositivo.", "warning");
-        } else {
-          showVoteAlert("Error al registrar tu voto. Intenta de nuevo.");
-        }
+        if (err.status === 409) showVoteAlert("Ya has votado en esta encuesta desde este dispositivo.", "warning");
+        else showVoteAlert("Error al registrar tu voto. Intenta de nuevo.");
         setLoading(false);
       }
     });
 
-    // ── Inicializar ──────────────────────────────────────────────────
     loadPoll();
   </script>
 

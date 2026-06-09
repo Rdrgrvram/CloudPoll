@@ -35,7 +35,7 @@
         Vota sin registro &mdash; resultados al instante.
       </p>
 
-      <!-- Search box: acceder a una encuesta por ID -->
+      <!-- Search box -->
       <div class="search-box" role="search">
         <input
           type="text"
@@ -46,48 +46,48 @@
           maxlength="64"
         />
         <button id="btn-vote" class="btn btn-primary" type="button">
-          <i class="fas fa-square" aria-hidden="true"></i> Votar
+          <i class="fas fa-check" aria-hidden="true"></i> Votar
         </button>
         <button id="btn-results" class="btn btn-secondary" type="button">
           Ver resultados
         </button>
       </div>
 
-      <!-- Mensaje de error de busqueda -->
+      <!-- Alert -->
       <div id="search-alert" class="hidden mt-md" role="alert" aria-live="polite"></div>
     </div>
   </section>
 
-  <!-- ── Info cards ──────────────────────────────────────────────── -->
+  <!-- ── Features ────────────────────────────────────────────────── -->
   <section class="page-section" id="features" aria-labelledby="features-title">
     <div class="container">
       <h2 id="features-title" class="text-center mb-xl" style="margin-bottom:var(--space-xl)">
-        Como funciona
+        Cómo funciona
       </h2>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:var(--space-lg)">
 
-        <article class="card animate-fadeIn" role="article">
-          <div style="font-size:2.5rem; margin-bottom:var(--space-md)" aria-hidden="true"><i class="fas fa-edit"></i></div>
+        <article class="feature-card animate-fadeIn" role="article">
+          <div class="feature-icon feature-icon-red" aria-hidden="true"><i class="fas fa-edit"></i></div>
           <h3 style="font-size:var(--font-size-xl); margin-bottom:var(--space-sm)">Crea encuestas</h3>
-          <p class="text-muted text-sm">
+          <p class="text-muted text-sm" style="line-height:1.7">
             Los administradores crean encuestas con multiples preguntas y opciones.
             Usa la IA de Amazon Bedrock para generar preguntas automaticamente.
           </p>
         </article>
 
-        <article class="card animate-fadeIn" role="article" style="animation-delay:0.1s">
-          <div style="font-size:2.5rem; margin-bottom:var(--space-md)" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+        <article class="feature-card animate-fadeIn" role="article" style="animation-delay:0.1s">
+          <div class="feature-icon feature-icon-mint" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
           <h3 style="font-size:var(--font-size-xl); margin-bottom:var(--space-sm)">Vota sin registro</h3>
-          <p class="text-muted text-sm">
+          <p class="text-muted text-sm" style="line-height:1.7">
             Cualquier persona puede votar ingresando el ID de la encuesta.
             Sin crear cuenta. Proteccion anti-duplicados por IP.
           </p>
         </article>
 
-        <article class="card animate-fadeIn" role="article" style="animation-delay:0.2s">
-          <div style="font-size:2.5rem; margin-bottom:var(--space-md)" aria-hidden="true"><i class="fas fa-chart-bar"></i></div>
+        <article class="feature-card animate-fadeIn" role="article" style="animation-delay:0.2s">
+          <div class="feature-icon feature-icon-blue" aria-hidden="true"><i class="fas fa-chart-bar"></i></div>
           <h3 style="font-size:var(--font-size-xl); margin-bottom:var(--space-sm)">Resultados en vivo</h3>
-          <p class="text-muted text-sm">
+          <p class="text-muted text-sm" style="line-height:1.7">
             Visualiza los resultados agregados con porcentajes y graficos de barras
             en tiempo real, accesibles para todos publicamente.
           </p>
@@ -100,45 +100,76 @@
   <!-- ── Stack tecnico ───────────────────────────────────────────── -->
   <section class="page-section" id="stack" aria-labelledby="stack-title">
     <div class="container">
-      <div class="card-elevated">
-        <h2 id="stack-title" style="font-size:var(--font-size-xl); margin-bottom:var(--space-lg)">
-          Construido con AWS Serverless
-        </h2>
+      <div class="card-elevated card-accent-blue">
+        <div style="display:flex; align-items:center; gap:var(--space-md); margin-bottom:var(--space-lg)">
+          <div style="width:42px;height:42px;background:rgba(75,94,166,0.2);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--blue-light);font-size:1.2rem;border:1px solid rgba(75,94,166,0.3)">
+            <i class="fab fa-aws"></i>
+          </div>
+          <h2 id="stack-title" style="font-size:var(--font-size-xl); margin:0">
+            Construido con AWS Serverless
+          </h2>
+        </div>
         <div style="display:flex; flex-wrap:wrap; gap:var(--space-sm)">
-          <span class="badge badge-primary">AWS Lambda</span>
-          <span class="badge badge-primary">API Gateway</span>
-          <span class="badge badge-primary">DynamoDB</span>
-          <span class="badge badge-primary">Amazon Cognito</span>
-          <span class="badge badge-primary">Amazon Bedrock</span>
+          <span class="badge badge-error">AWS Lambda</span>
+          <span class="badge badge-error">API Gateway</span>
+          <span class="badge badge-error">DynamoDB</span>
+          <span class="badge badge-error">Amazon Cognito</span>
+          <span class="badge badge-error">Amazon Bedrock</span>
           <span class="badge badge-info">Node.js 20</span>
           <span class="badge badge-info">SAM IaC</span>
         </div>
-        <p class="text-muted text-sm mt-md" style="margin-top:var(--space-md)">
-          Arquitectura 100% serverless. Costo <strong>$0</strong> en reposo.
+        <div class="divider"></div>
+        <p class="text-muted text-sm">
+          Arquitectura 100% serverless. Costo <strong style="color:var(--mint)">$0</strong> en reposo.
           Escala automaticamente a millones de votos sin gestion de servidores.
         </p>
       </div>
     </div>
   </section>
 
-  <!-- ── Encuesta de prueba rapida ───────────────────────────────── -->
+  <!-- ── Demo CTA ─────────────────────────────────────────────────── -->
   <section class="page-section" id="demo" aria-labelledby="demo-title">
     <div class="container-sm">
-      <div class="card" style="text-align:center">
-        <div style="font-size:2rem; margin-bottom:var(--space-md)" aria-hidden="true"><i class="fas fa-rocket"></i></div>
-        <h2 id="demo-title" style="font-size:var(--font-size-xl); margin-bottom:var(--space-sm)">
-          Encuesta de prueba disponible
-        </h2>
-        <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
-          Hay datos de ejemplo precargados. Usa el ID <strong>poll-test-001</strong> para votar o ver resultados.
-        </p>
-        <div style="display:flex; gap:var(--space-sm); justify-content:center; flex-wrap:wrap">
-          <a href="vote.html?pollId=poll-test-001" class="btn btn-primary" id="btn-demo-vote">
-            <span aria-hidden="true"><i class="fas fa-square"></i></span> Votar en demo
-          </a>
-          <a href="results.html?pollId=poll-test-001" class="btn btn-secondary" id="btn-demo-results">
-            Ver resultados demo
-          </a>
+      <div style="
+        background: linear-gradient(135deg, rgba(234,70,58,0.12) 0%, rgba(75,94,166,0.12) 100%);
+        border: 1px solid rgba(234,70,58,0.25);
+        border-radius: var(--radius-xl);
+        padding: var(--space-2xl);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      ">
+        <!-- decorative circles -->
+        <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(234,70,58,0.12),transparent);pointer-events:none;border-radius:50%"></div>
+        <div style="position:absolute;bottom:-50px;left:-50px;width:220px;height:220px;background:radial-gradient(circle,rgba(75,94,166,0.10),transparent);pointer-events:none;border-radius:50%"></div>
+
+        <div style="position:relative;z-index:1">
+          <div style="
+            width:60px;height:60px;
+            background:var(--red);
+            border-radius:var(--radius-xl);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.5rem;color:#fff;
+            margin:0 auto var(--space-lg);
+            box-shadow:var(--shadow-red)
+          " aria-hidden="true"><i class="fas fa-rocket"></i></div>
+
+          <h2 id="demo-title" style="font-size:var(--font-size-2xl); margin-bottom:var(--space-sm)">
+            Prueba la demo ahora
+          </h2>
+          <p class="text-muted text-sm" style="margin-bottom:var(--space-xl); max-width:380px; margin-left:auto; margin-right:auto; line-height:1.7">
+            Hay datos de ejemplo precargados. Usa el ID
+            <code style="background:rgba(175,221,208,0.1);color:var(--mint);padding:2px 8px;border-radius:4px;font-size:0.85em">poll-test-001</code>
+            para votar o ver resultados.
+          </p>
+          <div style="display:flex; gap:var(--space-md); justify-content:center; flex-wrap:wrap">
+            <a href="vote.html?pollId=poll-test-001" class="btn btn-primary btn-lg" id="btn-demo-vote">
+              <i class="fas fa-check" aria-hidden="true"></i> Votar en demo
+            </a>
+            <a href="results.html?pollId=poll-test-001" class="btn btn-outline btn-lg" id="btn-demo-results">
+              <i class="fas fa-chart-bar" aria-hidden="true"></i> Ver resultados
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -186,16 +217,12 @@
       if (id) window.location.href = `results.html?pollId=${encodeURIComponent(id)}`;
     });
 
-    // Permitir Enter en el input
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") btnVote.click();
     });
 
-    // Ocultar alerta al escribir
     input.addEventListener("input", () => alertBox.classList.add("hidden"));
   </script>
 
 </body>
 </html>
-
-

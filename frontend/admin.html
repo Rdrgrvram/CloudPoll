@@ -21,15 +21,18 @@
       <li><a href="results.html">Resultados</a></li>
       <li><a href="admin.html" class="active">Admin</a></li>
     </ul>
-    <!-- Info de sesion -->
     <div id="session-info" class="hidden" style="display:flex;align-items:center;gap:var(--space-sm)">
-      <span id="user-name" class="badge badge-primary text-sm"></span>
-      <button id="btn-logout" class="btn btn-sm btn-secondary" type="button">Salir</button>
+      <span id="user-name" class="badge badge-success text-sm"></span>
+      <button id="btn-logout" class="btn btn-sm btn-secondary" type="button">
+        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Salir
+      </button>
     </div>
   </nav>
 
   <!-- ── Loading overlay ─────────────────────────────────────────── -->
-  <div id="loading-overlay" class="spinner-overlay hidden" role="status" aria-label="Procesando"></div>
+  <div id="loading-overlay" class="spinner-overlay hidden" role="status" aria-label="Procesando">
+    <div class="spinner-xl"></div>
+  </div>
 
   <!-- ── Main ────────────────────────────────────────────────────── -->
   <main class="page-section" id="main-content">
@@ -38,22 +41,21 @@
       <!-- ── Vista: Login ──────────────────────────────────────────── -->
       <div id="view-login" class="admin-login animate-fadeIn">
         <div class="admin-login-icon" aria-hidden="true"><i class="fas fa-lock"></i></div>
-        <h1 style="font-size:var(--font-size-3xl)">Panel Admin</h1>
-        <p class="text-muted" style="max-width:360px;text-align:center">
-          Inicia sesion con tu cuenta de administrador para crear encuestas y gestionar la plataforma.
-        </p>
+        <div>
+          <h1 style="font-size:var(--font-size-3xl); margin-bottom:var(--space-sm)">Panel Admin</h1>
+          <p class="text-muted" style="max-width:360px;text-align:center;line-height:1.7">
+            Inicia sesion con tu cuenta de administrador para crear encuestas y gestionar la plataforma.
+          </p>
+        </div>
         <div style="display:flex; flex-direction:column; gap:var(--space-sm); align-items:center">
           <button id="btn-login" class="btn btn-primary btn-lg" type="button">
-            <i class="fas fa-lock" aria-hidden="true"></i>
+            <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
             <span class="btn-text">Iniciar sesion</span>
             <span class="spinner" aria-hidden="true"></span>
           </button>
-          <p class="text-xs text-muted">
-            Autenticacion via Amazon Cognito (JWT)
-          </p>
+          <p class="text-xs text-muted">Autenticacion via Amazon Cognito (JWT)</p>
         </div>
-        <!-- Nota modo local -->
-        <div id="local-mode-note" class="alert alert-info hidden" style="max-width:400px;text-align:left;margin-top:var(--space-md)">
+        <div id="local-mode-note" class="alert alert-info hidden" style="max-width:400px;text-align:left">
           <span class="alert-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
           <div class="alert-body">
             <div class="alert-title">Modo desarrollo local</div>
@@ -66,7 +68,7 @@
       <div id="view-panel" class="hidden animate-fadeIn">
 
         <div style="margin-bottom:var(--space-xl)">
-          <h1 style="font-size:var(--font-size-3xl); margin-bottom:var(--space-sm)">Panel Admin</h1>
+          <h1 style="font-size:var(--font-size-3xl); margin-bottom:var(--space-xs)">Panel Admin</h1>
           <p class="text-muted">Crea encuestas y gestiona la plataforma de CloudPoll.</p>
         </div>
 
@@ -89,26 +91,34 @@
           <div id="create-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
 
           <!-- Resultado exitoso -->
-          <div id="create-success" class="hidden card animate-slideInUp" style="margin-bottom:var(--space-lg); background:rgba(0,212,170,0.07); border-color:rgba(0,212,170,0.25)">
-            <h3 style="color:var(--color-success);margin-bottom:var(--space-sm)">
-              <i class="fas fa-check" aria-hidden="true"></i> Encuesta creada exitosamente
-            </h3>
+          <div id="create-success" class="hidden card card-accent-mint animate-slideInUp" style="margin-bottom:var(--space-lg);background:rgba(175,221,208,0.05)">
+            <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm)">
+              <div style="width:36px;height:36px;background:var(--mint);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:1rem;flex-shrink:0">
+                <i class="fas fa-check" aria-hidden="true"></i>
+              </div>
+              <h3 style="color:var(--mint);font-size:var(--font-size-lg)">Encuesta creada exitosamente</h3>
+            </div>
             <p class="text-sm text-muted" style="margin-bottom:var(--space-md)">
               Comparte el ID con tus participantes:
             </p>
-            <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap">
+            <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap;margin-bottom:var(--space-md)">
               <span class="poll-id-pill" id="created-poll-id" style="font-size:var(--font-size-sm);padding:8px 16px"></span>
-              <button id="btn-copy-id" class="btn btn-sm btn-secondary" type="button"><i class="fas fa-clipboard" aria-hidden="true"></i> Copiar ID</button>
+              <button id="btn-copy-id" class="btn btn-sm btn-outline" type="button">
+                <i class="fas fa-clipboard" aria-hidden="true"></i> Copiar ID
+              </button>
             </div>
-            <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md);flex-wrap:wrap">
-              <a id="link-vote-created"    href="#" class="btn btn-sm btn-primary">Votar</a>
-              <a id="link-results-created" href="#" class="btn btn-sm btn-secondary">Ver resultados</a>
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+              <a id="link-vote-created"    href="#" class="btn btn-sm btn-primary">
+                <i class="fas fa-check" aria-hidden="true"></i> Votar
+              </a>
+              <a id="link-results-created" href="#" class="btn btn-sm btn-secondary">
+                <i class="fas fa-chart-bar" aria-hidden="true"></i> Ver resultados
+              </a>
               <button id="btn-create-another" class="btn btn-sm btn-outline" type="button">Crear otra</button>
             </div>
           </div>
 
           <form id="create-poll-form" novalidate>
-            <!-- Titulo -->
             <div class="form-group">
               <label class="form-label required" for="poll-title">Titulo de la encuesta</label>
               <input type="text" id="poll-title" class="form-control"
@@ -116,7 +126,6 @@
                 maxlength="200" required aria-required="true" />
             </div>
 
-            <!-- Descripcion -->
             <div class="form-group">
               <label class="form-label" for="poll-desc">Descripcion (opcional)</label>
               <textarea id="poll-desc" class="form-control" rows="2"
@@ -124,7 +133,6 @@
                 maxlength="500"></textarea>
             </div>
 
-            <!-- Preguntas -->
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
               <h3 style="font-size:var(--font-size-lg)">Preguntas</h3>
               <button type="button" id="btn-add-question" class="btn btn-sm btn-secondary">
@@ -132,13 +140,11 @@
               </button>
             </div>
 
-            <div id="questions-editor" style="display:flex;flex-direction:column;gap:var(--space-md)">
-              <!-- Las preguntas se insertan aqui dinamicamente -->
-            </div>
+            <div id="questions-editor" style="display:flex;flex-direction:column;gap:var(--space-md)"></div>
 
-            <button type="submit" id="btn-create-submit" class="btn btn-primary btn-full" style="margin-top:var(--space-xl)">
+            <button type="submit" id="btn-create-submit" class="btn btn-primary btn-full btn-lg" style="margin-top:var(--space-xl)">
               <span class="spinner" aria-hidden="true"></span>
-              <span class="btn-text">Crear encuesta</span>
+              <span class="btn-text"><i class="fas fa-rocket" aria-hidden="true"></i> Crear encuesta</span>
             </button>
           </form>
         </div>
@@ -146,11 +152,18 @@
         <!-- ── Tab: Sugerencias IA ─────────────────────────────────── -->
         <div id="tab-suggest" class="tab-content" role="tabpanel" aria-labelledby="tabBtn-suggest">
 
-          <div class="card-elevated" style="margin-bottom:var(--space-lg)">
-            <h3 style="margin-bottom:var(--space-sm)"><i class="fas fa-lightbulb" aria-hidden="true"></i> Generador de preguntas con IA</h3>
-            <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
-              Ingresa un tema y Amazon Bedrock generara preguntas de encuesta con opciones de respuesta.
-            </p>
+          <div class="card-elevated card-accent-blue" style="margin-bottom:var(--space-lg)">
+            <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm)">
+              <div style="width:40px;height:40px;background:rgba(75,94,166,0.2);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--blue-light);font-size:1.1rem;border:1px solid rgba(75,94,166,0.3);flex-shrink:0">
+                <i class="fas fa-lightbulb" aria-hidden="true"></i>
+              </div>
+              <div>
+                <h3 style="margin-bottom:2px">Generador de preguntas con IA</h3>
+                <p class="text-muted text-sm">Amazon Bedrock generara preguntas con opciones de respuesta.</p>
+              </div>
+            </div>
+
+            <div class="divider"></div>
 
             <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
               <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
@@ -166,18 +179,19 @@
               </div>
             </div>
 
-            <button id="btn-suggest" class="btn btn-primary" style="margin-top:var(--space-md)" type="button">
+            <button id="btn-suggest" class="btn btn-blue" style="margin-top:var(--space-md)" type="button">
               <span class="spinner" aria-hidden="true"></span>
-              <span class=\"btn-text\"><i class=\"fas fa-bolt\" aria-hidden=\"true\"></i> Generar con IA</span>
+              <span class="btn-text"><i class="fas fa-bolt" aria-hidden="true"></i> Generar con IA</span>
             </button>
           </div>
 
           <div id="suggest-alert" class="hidden mb-lg" role="alert" aria-live="polite"></div>
+
           <div id="suggest-results" class="hidden animate-fadeIn">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
               <h4 style="font-size:var(--font-size-lg)">Preguntas sugeridas</h4>
               <button id="btn-use-suggestions" class="btn btn-sm btn-primary" type="button">
-                Usar en nueva encuesta
+                <i class="fas fa-arrow-right" aria-hidden="true"></i> Usar en nueva encuesta
               </button>
             </div>
             <div id="suggestions-container"></div>
@@ -186,7 +200,7 @@
 
         <!-- ── Tab: Ver resultados ─────────────────────────────────── -->
         <div id="tab-view" class="tab-content" role="tabpanel" aria-labelledby="tabBtn-view">
-          <div class="card-elevated">
+          <div class="card-elevated card-accent-mint">
             <h3 style="margin-bottom:var(--space-sm)">Ver resultados de una encuesta</h3>
             <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
               Ingresa el ID de la encuesta para visualizar los resultados agregados.
@@ -201,14 +215,14 @@
             </div>
           </div>
 
-          <!-- Acceso rapido al poll de prueba -->
           <div class="card" style="margin-top:var(--space-md)">
             <p class="text-sm text-muted" style="margin-bottom:var(--space-sm)">
-              ▬ <strong>Encuesta de prueba disponible:</strong> <code>poll-test-001</code>
+              <strong style="color:var(--color-text-2)">Encuesta de prueba disponible:</strong>
+              <code style="background:rgba(175,221,208,0.1);color:var(--mint);padding:2px 8px;border-radius:4px;font-size:0.85em;margin-left:4px">poll-test-001</code>
             </p>
             <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
               <a href="vote.html?pollId=poll-test-001" class="btn btn-sm btn-primary" target="_blank" rel="noopener">
-                Votar en demo
+                <i class="fas fa-check" aria-hidden="true"></i> Votar en demo
               </a>
               <a href="results.html?pollId=poll-test-001" class="btn btn-sm btn-secondary" target="_blank" rel="noopener">
                 Ver resultados demo
@@ -234,16 +248,14 @@
     import { login, logout, isAuthenticated, getToken, getUser, handleCallback } from "./js/auth.js";
     import CONFIG from "./config.js";
 
-    // ── Elementos principales ────────────────────────────────────────
-    const viewLogin      = document.getElementById("view-login");
-    const viewPanel      = document.getElementById("view-panel");
-    const sessionInfo    = document.getElementById("session-info");
-    const userNameEl     = document.getElementById("user-name");
-    const btnLogin       = document.getElementById("btn-login");
-    const btnLogout      = document.getElementById("btn-logout");
-    const localModeNote  = document.getElementById("local-mode-note");
+    const viewLogin     = document.getElementById("view-login");
+    const viewPanel     = document.getElementById("view-panel");
+    const sessionInfo   = document.getElementById("session-info");
+    const userNameEl    = document.getElementById("user-name");
+    const btnLogin      = document.getElementById("btn-login");
+    const btnLogout     = document.getElementById("btn-logout");
+    const localModeNote = document.getElementById("local-mode-note");
 
-    // ── Auth UI ──────────────────────────────────────────────────────
     function showLogin() {
       viewPanel.classList.add("hidden");
       viewLogin.classList.remove("hidden");
@@ -267,19 +279,12 @@
     btnLogin.addEventListener("click", () => {
       btnLogin.classList.add("loading");
       login();
-      // Si es local, login() es sincrono; actualizar UI inmediatamente
       if (CONFIG.IS_LOCAL) {
-        setTimeout(() => {
-          btnLogin.classList.remove("loading");
-          updateAuthState();
-        }, 400);
+        setTimeout(() => { btnLogin.classList.remove("loading"); updateAuthState(); }, 400);
       }
     });
 
-    btnLogout.addEventListener("click", () => {
-      logout();
-      updateAuthState();
-    });
+    btnLogout.addEventListener("click", () => { logout(); updateAuthState(); });
 
     window.addEventListener("auth:login",  updateAuthState);
     window.addEventListener("auth:logout", updateAuthState);
@@ -288,33 +293,25 @@
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => {
-          b.classList.remove("active");
-          b.setAttribute("aria-selected", "false");
+          b.classList.remove("active"); b.setAttribute("aria-selected","false");
         });
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-
-        btn.classList.add("active");
-        btn.setAttribute("aria-selected", "true");
-        const targetId = btn.getAttribute("aria-controls");
-        document.getElementById(targetId)?.classList.add("active");
+        btn.classList.add("active"); btn.setAttribute("aria-selected","true");
+        document.getElementById(btn.getAttribute("aria-controls"))?.classList.add("active");
       });
     });
 
     // ── Helpers ──────────────────────────────────────────────────────
     function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
     function showAlert(containerId, msg, type = "error") {
       const el = document.getElementById(containerId);
-      el.innerHTML = `
-        <div class="alert alert-${type}">
-          <span class="alert-icon" aria-hidden="true">${type === "error" ? '<i class="fas fa-exclamation-triangle"></i>' : type === "success" ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-info-circle"></i>'}</span>
-          <div class="alert-body">${msg}</div>
-        </div>`;
+      const icon = type === "error" ? '<i class="fas fa-exclamation-triangle"></i>'
+                 : type === "success" ? '<i class="fas fa-check-circle"></i>'
+                 : '<i class="fas fa-info-circle"></i>';
+      el.innerHTML = `<div class="alert alert-${type}"><span class="alert-icon" aria-hidden="true">${icon}</span><div class="alert-body">${msg}</div></div>`;
       el.classList.remove("hidden");
     }
 
@@ -325,11 +322,10 @@
 
     function addQuestion(prefilled = null) {
       questionCount++;
-      const qId = `q${questionCount}`;
+      const qId    = `q${questionCount}`;
       const editor = document.getElementById("questions-editor");
-
-      const div = document.createElement("div");
-      div.className = "card animate-slideInUp";
+      const div    = document.createElement("div");
+      div.className = "card card-accent-red animate-slideInUp";
       div.dataset.questionId = qId;
       div.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
@@ -347,36 +343,25 @@
         </div>
         <div class="form-group">
           <label class="form-label required">Opciones de respuesta (minimo 2)</label>
-          <div class="q-options" style="display:flex;flex-direction:column;gap:var(--space-sm)">
-          </div>
+          <div class="q-options" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
           <button type="button" class="btn btn-sm btn-outline btn-add-opt" style="margin-top:var(--space-sm)">
             <i class="fas fa-plus" aria-hidden="true"></i> Agregar opcion
           </button>
         </div>
       `;
-
       editor.appendChild(div);
 
-      // Agregar opciones por defecto o pre-rellenadas
-      const optsToAdd = prefilled?.options?.length >= 2
-        ? prefilled.options
-        : [{ text: "" }, { text: "" }];
-
+      const optsToAdd = prefilled?.options?.length >= 2 ? prefilled.options : [{text:""},{text:""}];
       optsToAdd.forEach(opt => addOption(div, opt.text));
 
-      // Eventos
-      div.querySelector(".btn-remove-question").addEventListener("click", () => {
-        div.remove();
-        renumberQuestions();
-      });
-
+      div.querySelector(".btn-remove-question").addEventListener("click", () => { div.remove(); renumberQuestions(); });
       div.querySelector(".btn-add-opt").addEventListener("click", () => addOption(div));
     }
 
     function addOption(questionDiv, prefillText = "") {
       const optsDiv = questionDiv.querySelector(".q-options");
-      const idx = optsDiv.children.length + 1;
-      const row = document.createElement("div");
+      const idx     = optsDiv.children.length + 1;
+      const row     = document.createElement("div");
       row.style.cssText = "display:flex;gap:var(--space-sm);align-items:center";
       row.innerHTML = `
         <input type="text" class="form-control opt-text"
@@ -384,12 +369,11 @@
           value="${escapeHtml(prefillText)}"
           maxlength="200" required aria-required="true"
           aria-label="Opcion de respuesta ${idx}" />
-        <button type="button" class="btn btn-sm btn-danger btn-remove-opt" aria-label="Eliminar opcion ${idx}"
-          style="flex-shrink:0"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <button type="button" class="btn btn-sm btn-danger btn-remove-opt" aria-label="Eliminar opcion ${idx}" style="flex-shrink:0">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
       `;
-      row.querySelector(".btn-remove-opt").addEventListener("click", () => {
-        row.remove();
-      });
+      row.querySelector(".btn-remove-opt").addEventListener("click", () => row.remove());
       optsDiv.appendChild(row);
     }
 
@@ -398,26 +382,22 @@
         const badge = div.querySelector(".badge");
         if (badge) badge.textContent = `Pregunta ${i + 1}`;
         const btn = div.querySelector(".btn-remove-question");
-        if (btn) {
-          btn.setAttribute("aria-label", `Eliminar pregunta ${i + 1}`);
-        }
+        if (btn) btn.setAttribute("aria-label", `Eliminar pregunta ${i + 1}`);
       });
     }
 
     document.getElementById("btn-add-question").addEventListener("click", () => addQuestion());
-
-    // Comenzar con 1 pregunta vacia
     addQuestion();
 
     // ── Crear encuesta ────────────────────────────────────────────────
-    const createForm     = document.getElementById("create-poll-form");
-    const btnCreateSubmit= document.getElementById("btn-create-submit");
-    const createSuccess  = document.getElementById("create-success");
-    const createdPollId  = document.getElementById("created-poll-id");
-    const btnCopyId      = document.getElementById("btn-copy-id");
-    const btnCreateAnother=document.getElementById("btn-create-another");
-    const linkVoteCreated= document.getElementById("link-vote-created");
-    const linkResCreated = document.getElementById("link-results-created");
+    const createForm      = document.getElementById("create-poll-form");
+    const btnCreateSubmit = document.getElementById("btn-create-submit");
+    const createSuccess   = document.getElementById("create-success");
+    const createdPollId   = document.getElementById("created-poll-id");
+    const btnCopyId       = document.getElementById("btn-copy-id");
+    const btnCreateAnother= document.getElementById("btn-create-another");
+    const linkVoteCreated = document.getElementById("link-vote-created");
+    const linkResCreated  = document.getElementById("link-results-created");
 
     createForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -429,62 +409,41 @@
       const title   = titleEl.value.trim();
       const desc    = descEl.value.trim();
 
-      if (!title) {
-        showAlert("create-alert", "El titulo de la encuesta es obligatorio.");
-        titleEl.focus();
-        return;
-      }
+      if (!title) { showAlert("create-alert","El titulo de la encuesta es obligatorio."); titleEl.focus(); return; }
 
-      // Recolectar preguntas
       const questionDivs = document.querySelectorAll("#questions-editor > .card");
-      if (questionDivs.length === 0) {
-        showAlert("create-alert", "Agrega al menos una pregunta.");
-        return;
-      }
+      if (questionDivs.length === 0) { showAlert("create-alert","Agrega al menos una pregunta."); return; }
 
       const questions = [];
       for (let i = 0; i < questionDivs.length; i++) {
         const div  = questionDivs[i];
         const text = div.querySelector(".q-text")?.value?.trim();
-        if (!text) {
-          showAlert("create-alert", `La pregunta ${i + 1} no tiene texto.`);
-          div.querySelector(".q-text")?.focus();
-          return;
-        }
-
+        if (!text) { showAlert("create-alert",`La pregunta ${i + 1} no tiene texto.`); div.querySelector(".q-text")?.focus(); return; }
         const optInputs = div.querySelectorAll(".opt-text");
         const options   = [];
         for (const inp of optInputs) {
           const t = inp.value.trim();
-          if (t) options.push({ optionId: `o${options.length + 1}`, text: t });
+          if (t) options.push({ optionId:`o${options.length+1}`, text:t });
         }
-
-        if (options.length < 2) {
-          showAlert("create-alert", `La pregunta ${i + 1} debe tener al menos 2 opciones con texto.`);
-          return;
-        }
-
-        questions.push({ questionId: `q${i + 1}`, text, options });
+        if (options.length < 2) { showAlert("create-alert",`La pregunta ${i + 1} debe tener al menos 2 opciones con texto.`); return; }
+        questions.push({ questionId:`q${i+1}`, text, options });
       }
 
-      // Enviar
       btnCreateSubmit.classList.add("loading");
       btnCreateSubmit.disabled = true;
 
       try {
-        const token = getToken();
-        const result = await createPoll({ title, description: desc, questions }, token);
-
-        // Mostrar exito
+        const token  = getToken();
+        const result = await createPoll({ title, description:desc, questions }, token);
         createdPollId.textContent = result.pollId;
-        linkVoteCreated.href      = `vote.html?pollId=${encodeURIComponent(result.pollId)}`;
-        linkResCreated.href       = `results.html?pollId=${encodeURIComponent(result.pollId)}`;
+        linkVoteCreated.href = `vote.html?pollId=${encodeURIComponent(result.pollId)}`;
+        linkResCreated.href  = `results.html?pollId=${encodeURIComponent(result.pollId)}`;
         createSuccess.classList.remove("hidden");
         createForm.reset();
         document.getElementById("questions-editor").innerHTML = "";
         questionCount = 0;
         addQuestion();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top:0, behavior:"smooth" });
       } catch (err) {
         showAlert("create-alert", err.data?.error || "Error al crear la encuesta. Intenta de nuevo.");
       } finally {
@@ -496,31 +455,24 @@
     btnCopyId.addEventListener("click", async () => {
       const id = createdPollId.textContent;
       await navigator.clipboard.writeText(id);
-      const orig = btnCopyId.textContent;
-      btnCopyId.textContent = "Copiado!";
-      setTimeout(() => { btnCopyId.textContent = orig; }, 1500);
+      const orig = btnCopyId.innerHTML;
+      btnCopyId.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+      setTimeout(() => { btnCopyId.innerHTML = orig; }, 1500);
     });
 
-    btnCreateAnother.addEventListener("click", () => {
-      createSuccess.classList.add("hidden");
-    });
+    btnCreateAnother.addEventListener("click", () => createSuccess.classList.add("hidden"));
 
     // ── Sugerencias IA ────────────────────────────────────────────────
-    const btnSuggest       = document.getElementById("btn-suggest");
-    const suggestResults   = document.getElementById("suggest-results");
-    const suggestContainer = document.getElementById("suggestions-container");
-    const btnUseSuggestions= document.getElementById("btn-use-suggestions");
-    let lastSuggestions    = [];
+    const btnSuggest        = document.getElementById("btn-suggest");
+    const suggestResults    = document.getElementById("suggest-results");
+    const suggestContainer  = document.getElementById("suggestions-container");
+    const btnUseSuggestions = document.getElementById("btn-use-suggestions");
+    let lastSuggestions     = [];
 
     btnSuggest.addEventListener("click", async () => {
       const topic = document.getElementById("suggest-topic").value.trim();
       const num   = parseInt(document.getElementById("suggest-num").value) || 3;
-
-      if (!topic) {
-        showAlert("suggest-alert", "Ingresa un tema para generar preguntas.");
-        document.getElementById("suggest-topic").focus();
-        return;
-      }
+      if (!topic) { showAlert("suggest-alert","Ingresa un tema para generar preguntas."); document.getElementById("suggest-topic").focus(); return; }
 
       hideAlert("suggest-alert");
       suggestResults.classList.add("hidden");
@@ -528,14 +480,11 @@
       btnSuggest.disabled = true;
 
       try {
-        const token = getToken();
-        const result = await suggestQuestions(topic, Math.min(Math.max(num, 1), 10), token);
+        const token  = getToken();
+        const result = await suggestQuestions(topic, Math.min(Math.max(num,1),10), token);
         lastSuggestions = result.questions || [];
 
-        if (lastSuggestions.length === 0) {
-          showAlert("suggest-alert", "No se generaron preguntas. Intenta con otro tema.", "warning");
-          return;
-        }
+        if (lastSuggestions.length === 0) { showAlert("suggest-alert","No se generaron preguntas. Intenta con otro tema.","warning"); return; }
 
         suggestContainer.innerHTML = "";
         lastSuggestions.forEach((q, i) => {
@@ -543,20 +492,14 @@
           card.className = "suggest-card animate-slideInUp";
           card.style.animationDelay = `${i * 0.07}s`;
           const opts = q.options.map(o => `<span class="suggest-opt-tag">${escapeHtml(o.text)}</span>`).join("");
-          card.innerHTML = `
-            <p class="suggest-card-text">${escapeHtml(q.text)}</p>
-            <div class="suggest-card-opts">${opts}</div>
-          `;
+          card.innerHTML = `<p class="suggest-card-text">${escapeHtml(q.text)}</p><div class="suggest-card-opts">${opts}</div>`;
           suggestContainer.appendChild(card);
         });
 
         suggestResults.classList.remove("hidden");
       } catch (err) {
-        if (err.status === 502) {
-          showAlert("suggest-alert", "Amazon Bedrock no esta disponible en modo local. Esta funcion requiere credenciales AWS reales.", "warning");
-        } else {
-          showAlert("suggest-alert", err.data?.error || "Error al generar sugerencias.");
-        }
+        if (err.status === 502) showAlert("suggest-alert","Amazon Bedrock no esta disponible en modo local. Esta funcion requiere credenciales AWS reales.","warning");
+        else showAlert("suggest-alert", err.data?.error || "Error al generar sugerencias.");
       } finally {
         btnSuggest.classList.remove("loading");
         btnSuggest.disabled = false;
@@ -565,16 +508,11 @@
 
     btnUseSuggestions.addEventListener("click", () => {
       if (lastSuggestions.length === 0) return;
-
-      // Cambiar a tab de crear encuesta
       document.getElementById("tabBtn-create").click();
-
-      // Limpiar preguntas actuales y agregar las sugeridas
       document.getElementById("questions-editor").innerHTML = "";
       questionCount = 0;
       lastSuggestions.forEach(q => addQuestion(q));
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top:0, behavior:"smooth" });
     });
 
     // ── Tab: Ver resultados ───────────────────────────────────────────
@@ -586,19 +524,13 @@
       btnViewResults.href = id ? `results.html?pollId=${encodeURIComponent(id)}` : "#";
     });
 
-    // ── Inicializar ───────────────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────────────
     async function init() {
-      // Manejar callback de Cognito si hay ?code= en la URL
       await handleCallback();
       updateAuthState();
     }
-
     init();
   </script>
 
 </body>
 </html>
-
-
-
-
