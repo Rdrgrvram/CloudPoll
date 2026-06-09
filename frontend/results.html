@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resultados — CloudPoll</title>
   <meta name="description" content="Resultados en tiempo real de la encuesta. Porcentajes y conteos por opcion." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -12,7 +13,7 @@
   <!-- ── Navbar ──────────────────────────────────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Navegacion principal">
     <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
-      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <div class="brand-icon" aria-hidden="true"><i class="fas fa-cloud"></i></div>
       <span>CloudPoll</span>
     </a>
     <ul class="navbar-nav">
@@ -34,7 +35,7 @@
       <!-- Error state -->
       <div id="load-error" class="hidden animate-slideInUp" role="alert">
         <div class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">&#128683;</div>
+          <div class="empty-state-icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
           <h2>Encuesta no encontrada</h2>
           <p id="load-error-msg">No se pudo cargar la encuesta.</p>
           <a href="index.html" class="btn btn-primary">Volver al inicio</a>
@@ -76,10 +77,10 @@
         <!-- Acciones -->
         <div style="display:flex; gap:var(--space-sm); margin-top:var(--space-xl); flex-wrap:wrap">
           <a id="link-vote" href="vote.html" class="btn btn-primary">
-            <span aria-hidden="true">&#128226;</span> Votar ahora
+            <i class="fas fa-square" aria-hidden="true"></i> Votar ahora
           </a>
           <button id="btn-refresh" class="btn btn-secondary" type="button">
-            <span aria-hidden="true">&#8635;</span> Actualizar
+            <i class="fas fa-redo" aria-hidden="true"></i> Actualizar
           </button>
           <a href="index.html" class="btn btn-outline">Inicio</a>
         </div>
@@ -185,7 +186,7 @@
                 <div class="result-option-stats">
                   <span class="result-option-count">${opt.count}</span>
                   <span>${opt.percentage}%</span>
-                  ${isWinner && maxCount > 0 ? '<span title="Lider actual" aria-label="Lider">&#127942;</span>' : ""}
+                  ${isWinner && maxCount > 0 ? '<i class="fas fa-star" title="Lider actual" aria-label="Lider" style="color:gold"></i>' : ""}
                 </div>
               </div>
               <div class="progress-bar-wrap" role="progressbar" aria-valuenow="${opt.percentage}" aria-valuemin="0" aria-valuemax="100" aria-label="${escapeHtml(opt.text)}: ${opt.percentage}%">
@@ -266,7 +267,7 @@
       btnRefresh.innerHTML = '<span class="spinner" aria-hidden="true"></span> Actualizando...';
       await loadResults(true);
       btnRefresh.disabled = false;
-      btnRefresh.innerHTML = '<span aria-hidden="true">&#8635;</span> Actualizar';
+      btnRefresh.innerHTML = '<i class="fas fa-redo" aria-hidden="true"></i> Actualizar';
     });
 
     // ── Inicializar ──────────────────────────────────────────────────

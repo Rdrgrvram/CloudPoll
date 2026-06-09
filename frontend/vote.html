@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Votar — CloudPoll</title>
   <meta name="description" content="Participa en la encuesta y registra tu voto de forma anonima y segura." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -12,7 +13,7 @@
   <!-- ── Navbar ──────────────────────────────────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Navegacion principal">
     <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
-      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <div class="brand-icon" aria-hidden="true"><i class="fas fa-cloud"></i></div>
       <span>CloudPoll</span>
     </a>
     <ul class="navbar-nav">
@@ -34,7 +35,7 @@
       <!-- Error de carga -->
       <div id="load-error" class="hidden animate-slideInUp" role="alert">
         <div class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">&#128683;</div>
+          <div class="empty-state-icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
           <h2>Encuesta no encontrada</h2>
           <p id="load-error-msg">No se pudo cargar la encuesta. Verifica el ID e intenta de nuevo.</p>
           <a href="index.html" class="btn btn-primary">Volver al inicio</a>
@@ -44,7 +45,7 @@
       <!-- Exito al votar -->
       <div id="vote-success" class="hidden animate-slideInUp" role="alert">
         <div class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">&#127881;</div>
+          <div class="empty-state-icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
           <h2>&#161;Voto registrado!</h2>
           <p>Tu voto ha sido guardado exitosamente. Gracias por participar.</p>
           <div style="display:flex; gap:var(--space-sm); justify-content:center; flex-wrap:wrap">
@@ -80,7 +81,7 @@
 
           <!-- Privacidad -->
           <div class="card" style="margin-top:var(--space-lg); margin-bottom:var(--space-lg); font-size:var(--font-size-sm); color:var(--color-text-3)">
-            <span aria-hidden="true">&#128274;</span>
+            <i class="fas fa-lock" aria-hidden="true"></i>
             Tu voto es <strong>anonimo</strong>. Solo se registra tu IP para evitar duplicados.
             No se almacena ningun dato personal.
           </div>
@@ -142,7 +143,7 @@
     function showVoteAlert(msg, type = "error") {
       voteAlert.innerHTML = `
         <div class="alert alert-${type}">
-          <span class="alert-icon" aria-hidden="true">${type === "error" ? "&#9888;" : "&#8505;"}</span>
+          <span class="alert-icon" aria-hidden="true">${type === "error" ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-info-circle"></i>'}</span>
           <div class="alert-body">${msg}</div>
         </div>`;
       voteAlert.classList.remove("hidden");

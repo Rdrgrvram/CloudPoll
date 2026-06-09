@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Admin — CloudPoll</title>
   <meta name="description" content="Panel de administracion de CloudPoll. Crea encuestas y genera preguntas con IA." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -12,7 +13,7 @@
   <!-- ── Navbar ──────────────────────────────────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Navegacion principal">
     <a class="navbar-brand" href="index.html" aria-label="CloudPoll - Inicio">
-      <div class="brand-icon" aria-hidden="true">&#9729;</div>
+      <div class="brand-icon" aria-hidden="true"><i class="fas fa-cloud"></i></div>
       <span>CloudPoll</span>
     </a>
     <ul class="navbar-nav">
@@ -36,14 +37,14 @@
 
       <!-- ── Vista: Login ──────────────────────────────────────────── -->
       <div id="view-login" class="admin-login animate-fadeIn">
-        <div class="admin-login-icon" aria-hidden="true">&#128274;</div>
+        <div class="admin-login-icon" aria-hidden="true"><i class="fas fa-lock"></i></div>
         <h1 style="font-size:var(--font-size-3xl)">Panel Admin</h1>
         <p class="text-muted" style="max-width:360px;text-align:center">
           Inicia sesion con tu cuenta de administrador para crear encuestas y gestionar la plataforma.
         </p>
         <div style="display:flex; flex-direction:column; gap:var(--space-sm); align-items:center">
           <button id="btn-login" class="btn btn-primary btn-lg" type="button">
-            <span aria-hidden="true">&#128274;</span>
+            <i class="fas fa-lock" aria-hidden="true"></i>
             <span class="btn-text">Iniciar sesion</span>
             <span class="spinner" aria-hidden="true"></span>
           </button>
@@ -53,7 +54,7 @@
         </div>
         <!-- Nota modo local -->
         <div id="local-mode-note" class="alert alert-info hidden" style="max-width:400px;text-align:left;margin-top:var(--space-md)">
-          <span class="alert-icon" aria-hidden="true">&#8505;</span>
+          <span class="alert-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
           <div class="alert-body">
             <div class="alert-title">Modo desarrollo local</div>
             El login simula autenticacion sin Cognito real.
@@ -72,13 +73,13 @@
         <!-- Tabs -->
         <div class="tabs" role="tablist" aria-label="Secciones del panel">
           <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-create"  id="tabBtn-create">
-            &#43; Crear encuesta
+            <i class="fas fa-plus" aria-hidden="true"></i> Crear encuesta
           </button>
           <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-suggest" id="tabBtn-suggest">
-            &#129302; Sugerencias IA
+            <i class="fas fa-lightbulb" aria-hidden="true"></i> Sugerencias IA
           </button>
           <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-view"    id="tabBtn-view">
-            &#128202; Ver resultados
+            <i class="fas fa-chart-bar" aria-hidden="true"></i> Ver resultados
           </button>
         </div>
 
@@ -90,14 +91,14 @@
           <!-- Resultado exitoso -->
           <div id="create-success" class="hidden card animate-slideInUp" style="margin-bottom:var(--space-lg); background:rgba(0,212,170,0.07); border-color:rgba(0,212,170,0.25)">
             <h3 style="color:var(--color-success);margin-bottom:var(--space-sm)">
-              &#10003; Encuesta creada exitosamente
+              <i class="fas fa-check" aria-hidden="true"></i> Encuesta creada exitosamente
             </h3>
             <p class="text-sm text-muted" style="margin-bottom:var(--space-md)">
               Comparte el ID con tus participantes:
             </p>
             <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap">
               <span class="poll-id-pill" id="created-poll-id" style="font-size:var(--font-size-sm);padding:8px 16px"></span>
-              <button id="btn-copy-id" class="btn btn-sm btn-secondary" type="button">Copiar ID</button>
+              <button id="btn-copy-id" class="btn btn-sm btn-secondary" type="button"><i class="fas fa-clipboard" aria-hidden="true"></i> Copiar ID</button>
             </div>
             <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md);flex-wrap:wrap">
               <a id="link-vote-created"    href="#" class="btn btn-sm btn-primary">Votar</a>
@@ -127,7 +128,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
               <h3 style="font-size:var(--font-size-lg)">Preguntas</h3>
               <button type="button" id="btn-add-question" class="btn btn-sm btn-secondary">
-                &#43; Agregar pregunta
+                <i class="fas fa-plus" aria-hidden="true"></i> Agregar pregunta
               </button>
             </div>
 
@@ -146,7 +147,7 @@
         <div id="tab-suggest" class="tab-content" role="tabpanel" aria-labelledby="tabBtn-suggest">
 
           <div class="card-elevated" style="margin-bottom:var(--space-lg)">
-            <h3 style="margin-bottom:var(--space-sm)">&#129302; Generador de preguntas con IA</h3>
+            <h3 style="margin-bottom:var(--space-sm)"><i class="fas fa-lightbulb" aria-hidden="true"></i> Generador de preguntas con IA</h3>
             <p class="text-muted text-sm" style="margin-bottom:var(--space-lg)">
               Ingresa un tema y Amazon Bedrock generara preguntas de encuesta con opciones de respuesta.
             </p>
@@ -159,7 +160,7 @@
                   maxlength="200" />
               </div>
               <div class="form-group" style="width:140px;margin-bottom:0">
-                <label class="form-label" for="suggest-num">N&#186; preguntas</label>
+                <label class="form-label" for="suggest-num"># preguntas</label>
                 <input type="number" id="suggest-num" class="form-control"
                   value="3" min="1" max="10" />
               </div>
@@ -167,7 +168,7 @@
 
             <button id="btn-suggest" class="btn btn-primary" style="margin-top:var(--space-md)" type="button">
               <span class="spinner" aria-hidden="true"></span>
-              <span class="btn-text">&#9889; Generar con IA</span>
+              <span class=\"btn-text\"><i class=\"fas fa-bolt\" aria-hidden=\"true\"></i> Generar con IA</span>
             </button>
           </div>
 
@@ -203,7 +204,7 @@
           <!-- Acceso rapido al poll de prueba -->
           <div class="card" style="margin-top:var(--space-md)">
             <p class="text-sm text-muted" style="margin-bottom:var(--space-sm)">
-              &#128640; <strong>Encuesta de prueba disponible:</strong> <code>poll-test-001</code>
+              ▬ <strong>Encuesta de prueba disponible:</strong> <code>poll-test-001</code>
             </p>
             <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
               <a href="vote.html?pollId=poll-test-001" class="btn btn-sm btn-primary" target="_blank" rel="noopener">
@@ -311,7 +312,7 @@
       const el = document.getElementById(containerId);
       el.innerHTML = `
         <div class="alert alert-${type}">
-          <span class="alert-icon" aria-hidden="true">${type === "error" ? "&#9888;" : type === "success" ? "&#10003;" : "&#8505;"}</span>
+          <span class="alert-icon" aria-hidden="true">${type === "error" ? '<i class="fas fa-exclamation-triangle"></i>' : type === "success" ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-info-circle"></i>'}</span>
           <div class="alert-body">${msg}</div>
         </div>`;
       el.classList.remove("hidden");
@@ -334,7 +335,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
           <span class="badge badge-primary">Pregunta ${questionCount}</span>
           <button type="button" class="btn btn-sm btn-danger btn-remove-question" aria-label="Eliminar pregunta ${questionCount}">
-            &#215; Eliminar
+            <i class="fas fa-times" aria-hidden="true"></i> Eliminar
           </button>
         </div>
         <div class="form-group">
@@ -349,7 +350,7 @@
           <div class="q-options" style="display:flex;flex-direction:column;gap:var(--space-sm)">
           </div>
           <button type="button" class="btn btn-sm btn-outline btn-add-opt" style="margin-top:var(--space-sm)">
-            &#43; Agregar opcion
+            <i class="fas fa-plus" aria-hidden="true"></i> Agregar opcion
           </button>
         </div>
       `;
@@ -384,7 +385,7 @@
           maxlength="200" required aria-required="true"
           aria-label="Opcion de respuesta ${idx}" />
         <button type="button" class="btn btn-sm btn-danger btn-remove-opt" aria-label="Eliminar opcion ${idx}"
-          style="flex-shrink:0">&#215;</button>
+          style="flex-shrink:0"><i class="fas fa-times" aria-hidden="true"></i></button>
       `;
       row.querySelector(".btn-remove-opt").addEventListener("click", () => {
         row.remove();
@@ -597,3 +598,7 @@
 
 </body>
 </html>
+
+
+
+
